@@ -12,6 +12,7 @@ module andrew_volostnykh.webrunner {
 	requires java.net.http;
 	requires com.fasterxml.jackson.databind;
 	requires static lombok;
+	requires java.desktop;
 
 	opens andrew_volostnykh.webrunner to javafx.fxml;
 	exports andrew_volostnykh.webrunner;

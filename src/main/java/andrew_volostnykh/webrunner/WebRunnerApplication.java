@@ -15,6 +15,7 @@ public class WebRunnerApplication extends Application {
 		scene.getStylesheets().add(
 			getClass().getResource("/ui/styles/style.css").toExternalForm()
 		);
+		scene.getStylesheets().add("org/kordamp/bootstrapfx/core/bootstrapfx.css");
 		stage.setTitle("WebRunner");
 		stage.setScene(scene);
 		stage.show();
