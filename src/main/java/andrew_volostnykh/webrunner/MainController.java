@@ -2,7 +2,9 @@ package andrew_volostnykh.webrunner;
 
 import andrew_volostnykh.webrunner.collections.CollectionNode;
 import andrew_volostnykh.webrunner.collections.RequestDefinition;
-import andrew_volostnykh.webrunner.service.HttpRequestService;
+import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
+import andrew_volostnykh.webrunner.components.JsonCodeArea;
+import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -21,24 +23,26 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.fxmisc.richtext.CodeArea;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 public class MainController {
+
+	private final CollectionPersistenceService persistenceService = new CollectionPersistenceService();
 
 	@FXML
 	private ComboBox<String> methodCombo;
 	@FXML
 	private TextField urlField;
 	@FXML
-	private TextArea bodyArea;
+	private VBox bodyContainer;
+	private JsonCodeArea bodyArea;
 
-	// Headers UI
 	@FXML
 	private TextField headerKeyField;
 	@FXML
@@ -46,7 +50,7 @@ public class MainController {
 	@FXML
 	private VBox headersList;
 
-	private final ObservableList<Entry<String, String>> headers = FXCollections.observableArrayList();
+	private final ObservableList<Map.Entry<String, String>> headers = FXCollections.observableArrayList();
 
 	@FXML
 	private TextArea responseArea;
@@ -55,23 +59,42 @@ public class MainController {
 	@FXML
 	private TreeView<CollectionNode> collectionTree;
 
-	private ChangeListener<String> methodListener;
-	private ChangeListener<String> urlListener;
-	private ChangeListener<String> bodyListener;
-	private ListChangeListener<Entry<String, String>> headersListener;
+	private ChangeListener<String> methodListener, urlListener, bodyListener;
+	private ListChangeListener<Map.Entry<String, String>> headersListener;
 
 	private final HttpRequestService httpService = new HttpRequestService();
 
+	// =======================================
+	// 🔥 ІНІЦІАЛІЗАЦІЯ
+	// =======================================
 	@FXML
 	public void initialize() {
-		// HTTP methods
+		bodyArea = new JsonCodeArea();
+
+		bodyContainer.getChildren().add(bodyArea);
+
+		Button beautifyBtn = new Button("Beautify JSON");
+		beautifyBtn.setOnAction(e -> bodyArea.beautifyBody());
+		bodyContainer.getChildren().add(beautifyBtn);
+
 		methodCombo.setItems(FXCollections.observableArrayList("GET", "POST", "PUT", "DELETE"));
 		methodCombo.getSelectionModel().select("GET");
 
-		// === Tree init ===
-		CollectionNode rootNode = new CollectionNode("Requests", true, null, null);
-		TreeItem<CollectionNode> rootItem = new TreeItem<>(rootNode);
-		rootItem.setExpanded(true);
+		// 🟢 Завантаження дерева
+		CollectionNode saved = persistenceService.load();
+		TreeItem<CollectionNode> rootItem;
+
+		if (saved != null) {
+			rootItem = buildTreeItem(saved);
+			rootItem.setExpanded(true);
+			persistenceService.setRootNode(saved);
+		} else {
+			CollectionNode rootNode = new CollectionNode("Requests", true, null, null);
+			rootItem = new TreeItem<>(rootNode);
+			rootItem.setExpanded(true);
+			persistenceService.setRootNode(rootNode);
+		}
+
 		collectionTree.setRoot(rootItem);
 		collectionTree.setShowRoot(true);
 
@@ -86,7 +109,10 @@ public class MainController {
 			private final FontIcon requestIcon = new FontIcon("mdi-file-document:16");
 
 			@Override
-			protected void updateItem(CollectionNode item, boolean empty) {
+			protected void updateItem(
+				CollectionNode item,
+				boolean empty
+			) {
 				super.updateItem(item, empty);
 
 				if (empty || item == null) {
@@ -100,54 +126,70 @@ public class MainController {
 		});
 	}
 
+	// =======================================
+	// 🚀 Надіслати запит
+	// =======================================
 	@FXML
 	public void sendRequest() {
 		statusLabel.setText("Sending...");
 		responseArea.setText("");
 
-		CompletableFuture
-			.supplyAsync(() -> {
-				try {
-					Map<String, String> headersMap = new HashMap<>();
-					headers.forEach(entry -> {
-						if (!entry.getKey().isBlank()) {
-							headersMap.put(entry.getKey(), entry.getValue());
-						}
-					});
+		CompletableFuture.supplyAsync(() -> {
+			try {
+				Map<String, String> headersMap = new HashMap<>();
+				headers.forEach(entry -> headersMap.put(entry.getKey(), entry.getValue()));
 
-					var response = httpService.sendRequest(
-						methodCombo.getValue(),
-						urlField.getText(),
+				// FIXME: REMOVE!!!
+				Map<String, String> vars = new HashMap<>();
+				vars.put("generatedName", "JohnDoe123");
+				vars.put("userId", "42");
+				vars.put("timestamp", String.valueOf(System.currentTimeMillis()));
+
+				String preparedBody = DependenciesContainer.getVarsApplicator()
+					.applyVariables(
 						bodyArea.getText(),
-						headersMap
+						vars
 					);
 
-					String formattedBody = httpService.formatJson(response.body());
-					return "Status: " + response.statusCode() + "\n\n" + formattedBody;
+				var response = httpService.sendRequest(
+					methodCombo.getValue(),
+					urlField.getText(),
+					preparedBody,
+					headersMap
+				);
 
-				} catch (Exception e) {
-					return "Error: " + e.getMessage();
-				}
-			})
-			.thenAccept(result -> Platform.runLater(() -> {
-				statusLabel.setText("Done");
-				responseArea.setText(result);
-			}));
+				String formattedBody = httpService.formatJson(response.body());
+				return "Status: " + response.statusCode() + "\n\n" + formattedBody;
+			} catch (Exception e) {
+				return "Error: " + e.getMessage();
+			}
+		}).thenAccept(result -> Platform.runLater(() -> {
+			statusLabel.setText("Done");
+			responseArea.setText(result);
+		}));
 	}
 
+	// =======================================
+	// 🔄 Завантажити реквест
+	// =======================================
 	private void loadRequest(RequestDefinition req) {
-		// 🔹 Вимикаємо попередні listener'и, щоб не плодити їх
-		if (methodListener != null) methodCombo.valueProperty().removeListener(methodListener);
-		if (urlListener != null) urlField.textProperty().removeListener(urlListener);
-		if (bodyListener != null) bodyArea.textProperty().removeListener(bodyListener);
-		if (headersListener != null) headers.removeListener(headersListener);
+		if (methodListener != null) {
+			methodCombo.valueProperty().removeListener(methodListener);
+		}
+		if (urlListener != null) {
+			urlField.textProperty().removeListener(urlListener);
+		}
+		if (bodyListener != null) {
+			bodyArea.textProperty().removeListener(bodyListener);
+		}
+		if (headersListener != null) {
+			headers.removeListener(headersListener);
+		}
 
-		// 🔹 Завантажуємо значення в поля
 		methodCombo.setValue(req.getMethod());
 		urlField.setText(req.getUrl());
-		bodyArea.setText(req.getBody());
+		bodyArea.replaceText(req.getBody());
 
-		// Хедери: і логіка, і UI
 		headers.clear();
 		headersList.getChildren().clear();
 		req.getHeaders().forEach((k, v) -> {
@@ -156,10 +198,18 @@ public class MainController {
 			addHeaderRowToUi(entry);
 		});
 
-		// 🔹 Ставимо listener'и назад — тепер вони оновлюють саме цей req
-		methodListener = (obs, old, val) -> req.setMethod(val);
-		urlListener = (obs, old, val) -> req.setUrl(val);
-		bodyListener = (obs, old, val) -> req.setBody(val);
+		methodListener = (obs, old, val) -> {
+			req.setMethod(val);
+			persistenceService.save();
+		};
+		urlListener = (obs, old, val) -> {
+			req.setUrl(val);
+			persistenceService.save();
+		};
+		bodyListener = (obs, old, val) -> {
+			req.setBody(val);
+			persistenceService.save();
+		};
 		methodCombo.valueProperty().addListener(methodListener);
 		urlField.textProperty().addListener(urlListener);
 		bodyArea.textProperty().addListener(bodyListener);
@@ -167,10 +217,14 @@ public class MainController {
 		headersListener = change -> {
 			req.getHeaders().clear();
 			headers.forEach(entry -> req.getHeaders().put(entry.getKey(), entry.getValue()));
+			persistenceService.save();
 		};
 		headers.addListener(headersListener);
 	}
 
+	// =======================================
+	// 🆕 Створення нового запиту
+	// =======================================
 	@FXML
 	public void createNewRequestOrFolder(ActionEvent event) {
 		TextInputDialog dialog = new TextInputDialog("New Request");
@@ -180,25 +234,15 @@ public class MainController {
 
 		dialog.showAndWait().ifPresent(name -> {
 			if (!name.isBlank()) {
-				RequestDefinition request = new RequestDefinition(
-					name,
-					"GET",
-					"https://",
-					new HashMap<>(),
-					""
-				);
+				RequestDefinition request = new RequestDefinition(name, "GET", "https://", new HashMap<>(), "");
 
-				CollectionNode newRequestNode = new CollectionNode(
-					name,
-					false,
-					null,
-					request
-				);
-
-				TreeItem<CollectionNode> root = collectionTree.getRoot();
+				CollectionNode newRequestNode = new CollectionNode(name, false, null, request);
 				TreeItem<CollectionNode> newNode = new TreeItem<>(newRequestNode);
-				root.getChildren().add(newNode);
-				root.setExpanded(true);
+
+				collectionTree.getRoot().getChildren().add(newNode);
+				collectionTree.getRoot().setExpanded(true);
+
+				persistenceService.save();
 
 				loadRequest(request);
 				collectionTree.getSelectionModel().select(newNode);
@@ -206,36 +250,51 @@ public class MainController {
 		});
 	}
 
+	// =======================================
+	// ➕ Додавання header
+	// =======================================
 	@FXML
 	public void addHeader() {
 		String key = headerKeyField.getText();
 		String value = headerValueField.getText();
-
 		if (key == null || key.isBlank()) {
 			return;
 		}
 
 		var entry = new AbstractMap.SimpleEntry<>(key, value);
-		headers.add(entry); // логічний список хедерів
-
+		headers.add(entry);
 		addHeaderRowToUi(entry);
 
 		headerKeyField.clear();
 		headerValueField.clear();
+		persistenceService.save();
 	}
 
-	private void addHeaderRowToUi(Entry<String, String> entry) {
+	private void addHeaderRowToUi(Map.Entry<String, String> entry) {
 		HBox row = new HBox(10);
 		Label label = new Label(entry.getKey() + ": " + entry.getValue());
 
 		Button removeBtn = new Button("✖");
 		removeBtn.setOnAction(e -> {
-			headers.remove(entry);          // прибираємо з логіки
-			headersList.getChildren().remove(row); // прибираємо з UI
+			headers.remove(entry);
+			headersList.getChildren().remove(row);
+			persistenceService.save();
 		});
 
 		row.getChildren().addAll(label, removeBtn);
 		row.getStyleClass().add("headers-row");
 		headersList.getChildren().add(row);
 	}
+
+	// =======================================
+	// 📁 Відновлення дерева
+	// =======================================
+	private TreeItem<CollectionNode> buildTreeItem(CollectionNode node) {
+		TreeItem<CollectionNode> item = new TreeItem<>(node);
+		if (node.getChildren() != null) {
+			node.getChildren().forEach(child -> item.getChildren().add(buildTreeItem(child)));
+		}
+		return item;
+	}
+
 }

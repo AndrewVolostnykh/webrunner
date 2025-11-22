@@ -1,11 +1,15 @@
 package andrew_volostnykh.webrunner;
 
+import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class WebRunnerApplication extends Application {
+
+	private static final CollectionPersistenceService collectionPersistenceService =
+		new CollectionPersistenceService();
 
 	@Override
 	public void start(Stage stage) throws Exception {

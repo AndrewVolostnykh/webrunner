@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.service;
+package andrew_volostnykh.webrunner.service.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
@@ -30,15 +31,21 @@ public class HttpRequestService {
 			headers.forEach(builder::header);
 
 			switch (method) {
-				case "POST" -> builder.POST(HttpRequest.BodyPublishers.ofString(body));
-				case "PUT" -> builder.PUT(HttpRequest.BodyPublishers.ofString(body));
+				case "POST" -> builder.POST(BodyPublishers.ofString(body));
+				case "PUT" -> builder.PUT(BodyPublishers.ofString(body));
 				case "DELETE" -> builder.DELETE();
 				default -> builder.GET();
 			}
 
-			HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+			HttpResponse<String> response = client.send(
+				builder.build(),
+				HttpResponse.BodyHandlers.ofString()
+			);
 
-			return new HttpResponseData(response.statusCode(), response.body());
+			return new HttpResponseData(
+				response.statusCode(),
+				response.body()
+			);
 		}
 	}
 

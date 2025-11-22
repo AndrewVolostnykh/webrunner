@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.service;
+package andrew_volostnykh.webrunner.service.http;
 
 public record HttpResponseData(int statusCode, String body) {
 

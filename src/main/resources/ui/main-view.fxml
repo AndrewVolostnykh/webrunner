@@ -44,10 +44,12 @@
         <!-- 🔥 SplitPane для Body та Response -->
         <SplitPane orientation="VERTICAL" dividerPositions="0.55" VBox.vgrow="ALWAYS">
             <!-- Верхня зона -->
-            <VBox spacing="10">
-                <TabPane>
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+                <TabPane VBox.vgrow="ALWAYS">
                     <Tab text="Body">
-                        <TextArea fx:id="bodyArea"/>
+                        <VBox spacing="5" VBox.vgrow="ALWAYS">
+                            <VBox fx:id="bodyContainer" VBox.vgrow="ALWAYS"/>
+                        </VBox>
                     </Tab>
                     <Tab text="Headers">
                         <VBox spacing="10" xmlns:fx="http://javafx.com/fxml">
@@ -64,7 +66,7 @@
             </VBox>
 
             <!-- Нижня зона (Response) -->
-            <VBox spacing="5">
+            <VBox spacing="5" VBox.vgrow="ALWAYS">
                 <Label fx:id="statusLabel"/>
                 <TextArea fx:id="responseArea" editable="false" VBox.vgrow="ALWAYS"/>
             </VBox>
