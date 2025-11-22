@@ -15,4 +15,9 @@ public class CollectionNode {
 	private boolean isFolder;
 	private List<CollectionNode> children = new ArrayList<>();
 	private RequestDefinition request;
+
+	@Override
+	public String toString() {
+		return name;
+	}
 }

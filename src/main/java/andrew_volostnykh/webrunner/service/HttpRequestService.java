@@ -16,7 +16,12 @@ public class HttpRequestService {
 			SerializationFeature.INDENT_OUTPUT
 		);
 
-	public HttpResponseData sendRequest(String method, String url, String body, Map<String, String> headers) throws Exception {
+	public HttpResponseData sendRequest(
+		String method,
+		String url,
+		String body,
+		Map<String, String> headers
+	) throws Exception {
 		try (HttpClient client = HttpClient.newHttpClient()) {
 
 			HttpRequest.Builder builder = HttpRequest.newBuilder()

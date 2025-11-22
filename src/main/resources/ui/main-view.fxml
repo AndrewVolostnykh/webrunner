@@ -46,19 +46,19 @@
             <!-- Верхня зона -->
             <VBox spacing="10">
                 <TabPane>
-                    <Tab text="Headers">
-                        <VBox spacing="10">
-                            <TableView fx:id="headersTable">
-                                <columns>
-                                    <TableColumn fx:id="colKey" text="Key"/>
-                                    <TableColumn fx:id="colValue" text="Value"/>
-                                </columns>
-                            </TableView>
-                            <Button text="Add header" onAction="#addHeader"/>
-                        </VBox>
-                    </Tab>
                     <Tab text="Body">
                         <TextArea fx:id="bodyArea"/>
+                    </Tab>
+                    <Tab text="Headers">
+                        <VBox spacing="10" xmlns:fx="http://javafx.com/fxml">
+                            <HBox spacing="5">
+                                <TextField fx:id="headerKeyField" promptText="Header Key" />
+                                <TextField fx:id="headerValueField" promptText="Header Value" />
+                                <Button text="Add" onAction="#addHeader"/>
+                            </HBox>
+
+                            <VBox fx:id="headersList" spacing="5"/>
+                        </VBox>
                     </Tab>
                 </TabPane>
             </VBox>
