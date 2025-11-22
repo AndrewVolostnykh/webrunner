@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.GridPane?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.control.SplitPane?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="andrew_volostnykh.webrunner.MainController"
+      spacing="10" prefWidth="800" VBox.vgrow="ALWAYS">
+
+    <!-- Верхній блок (URL + кнопка) -->
+    <GridPane hgap="10" vgap="5">
+        <columnConstraints>
+            <ColumnConstraints minWidth="80"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+            <ColumnConstraints minWidth="90"/>
+        </columnConstraints>
+
+        <ComboBox fx:id="methodCombo" promptText="Method" GridPane.columnIndex="0"/>
+        <TextField fx:id="urlField" promptText="https://api.example.com" GridPane.columnIndex="1"/>
+
+        <Button fx:id="sendButton" onAction="#sendRequest" GridPane.columnIndex="2" GridPane.valignment="CENTER">
+            <graphic>
+                <FontIcon iconLiteral="mdi-send:20"/>
+            </graphic>
+        </Button>
+    </GridPane>
+
+    <!-- 🔥 SplitPane для Body та Response -->
+    <SplitPane orientation="VERTICAL" dividerPositions="0.55" VBox.vgrow="ALWAYS">
+        <!-- Верхня зона -->
+        <VBox spacing="10">
+            <TabPane>
+                <Tab text="Headers">
+                    <VBox spacing="10">
+                        <TableView fx:id="headersTable">
+                            <columns>
+                                <TableColumn fx:id="colKey" text="Key"/>
+                                <TableColumn fx:id="colValue" text="Value"/>
+                            </columns>
+                        </TableView>
+                        <Button text="Add header" onAction="#addHeader"/>
+                    </VBox>
+                </Tab>
+                <Tab text="Body">
+                    <TextArea fx:id="bodyArea"/>
+                </Tab>
+            </TabPane>
+        </VBox>
+
+        <!-- Нижня зона (Response) -->
+        <VBox spacing="5">
+            <Label fx:id="statusLabel"/>
+            <TextArea fx:id="responseArea" editable="false" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+    </SplitPane>
+
+</VBox>
