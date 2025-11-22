@@ -15,4 +15,5 @@ public class RequestDefinition {
 	private String url;
 	private Map<String, String> headers;
 	private String body;
+	private String varsDefinition;
 }

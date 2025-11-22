@@ -3,6 +3,7 @@ package andrew_volostnykh.webrunner;
 import andrew_volostnykh.webrunner.collections.CollectionNode;
 import andrew_volostnykh.webrunner.collections.RequestDefinition;
 import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
+import andrew_volostnykh.webrunner.components.JsCodeArea;
 import andrew_volostnykh.webrunner.components.JsonCodeArea;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import javafx.application.Platform;
@@ -26,6 +27,8 @@ import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.CodeArea;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +45,10 @@ public class MainController {
 	@FXML
 	private VBox bodyContainer;
 	private JsonCodeArea bodyArea;
+
+	@FXML
+	private VBox varsContainer;
+	private CodeArea beforeRequestCodeArea;
 
 	@FXML
 	private TextField headerKeyField;
@@ -69,7 +76,22 @@ public class MainController {
 	// =======================================
 	@FXML
 	public void initialize() {
+		beforeRequestCodeArea = new JsCodeArea();
+		beforeRequestCodeArea.replaceText("""
+											  var vars = {
+											  generatedName: "rnadom",
+											  userId: 123
+											  }
+											  """);
+		varsContainer.getChildren().add(beforeRequestCodeArea);
+
 		bodyArea = new JsonCodeArea();
+		bodyArea.replaceText("""
+								 {
+								 	"name": "{{generatedName}}",
+								 	"userId": "{{userId}}""
+								 }
+								 """);
 
 		bodyContainer.getChildren().add(bodyArea);
 
@@ -139,17 +161,18 @@ public class MainController {
 				Map<String, String> headersMap = new HashMap<>();
 				headers.forEach(entry -> headersMap.put(entry.getKey(), entry.getValue()));
 
-				// FIXME: REMOVE!!!
-				Map<String, String> vars = new HashMap<>();
-				vars.put("generatedName", "JohnDoe123");
-				vars.put("userId", "42");
-				vars.put("timestamp", String.valueOf(System.currentTimeMillis()));
+				String preparedBody = bodyArea.getText();
+				if (beforeRequestCodeArea.getText() != null && !beforeRequestCodeArea.getText().isBlank()) {
 
-				String preparedBody = DependenciesContainer.getVarsApplicator()
-					.applyVariables(
-						bodyArea.getText(),
-						vars
-					);
+					Map<String, Object> vars = DependenciesContainer.getJsExecutorService()
+						.executeJsVariables(beforeRequestCodeArea.getText());
+
+					preparedBody = DependenciesContainer.getVarsApplicator()
+						.applyVariables(
+							bodyArea.getText(),
+							vars
+						);
+				}
 
 				var response = httpService.sendRequest(
 					methodCombo.getValue(),
@@ -220,13 +243,20 @@ public class MainController {
 			persistenceService.save();
 		};
 		headers.addListener(headersListener);
+		beforeRequestCodeArea.replaceText(req.getVarsDefinition());
+		beforeRequestCodeArea.textProperty().addListener((obs, old, val) -> {
+			req.setVarsDefinition(val);
+			persistenceService.save();
+		});
 	}
 
 	// =======================================
 	// 🆕 Створення нового запиту
 	// =======================================
 	@FXML
-	public void createNewRequestOrFolder(ActionEvent event) {
+	public void createNewRequestOrFolder(
+		ActionEvent event
+	) {
 		TextInputDialog dialog = new TextInputDialog("New Request");
 		dialog.setTitle("Create Request");
 		dialog.setHeaderText("Create new HTTP Request");
@@ -234,7 +264,14 @@ public class MainController {
 
 		dialog.showAndWait().ifPresent(name -> {
 			if (!name.isBlank()) {
-				RequestDefinition request = new RequestDefinition(name, "GET", "https://", new HashMap<>(), "");
+				RequestDefinition request = new RequestDefinition(
+					name,
+					"POST",
+					"https://httpbin.org/post",
+					new HashMap<>(),
+					"",
+					""
+				);
 
 				CollectionNode newRequestNode = new CollectionNode(name, false, null, request);
 				TreeItem<CollectionNode> newNode = new TreeItem<>(newRequestNode);

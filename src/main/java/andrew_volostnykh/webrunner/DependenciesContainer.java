@@ -1,5 +1,6 @@
 package andrew_volostnykh.webrunner;
 
+import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,4 +16,7 @@ public class DependenciesContainer {
 
 	@Getter
 	private static final VarsApplicator varsApplicator = new VarsApplicator();
+
+	@Getter
+	private static final JsExecutorService jsExecutorService = new JsExecutorService();
 }

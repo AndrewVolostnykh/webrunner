@@ -62,6 +62,19 @@
                             <VBox fx:id="headersList" spacing="5"/>
                         </VBox>
                     </Tab>
+                    <Tab text="Testing">
+                        <TabPane>
+                            <!-- Vars Definition -->
+                            <Tab text="Vars Definition">
+                                <VBox fx:id="varsContainer" VBox.vgrow="ALWAYS"/>
+                            </Tab>
+
+                            <!-- On Response -->
+                            <Tab text="On Response" disable="true">
+                                <Label text="Coming soon..."/>
+                            </Tab>
+                        </TabPane>
+                    </Tab>
                 </TabPane>
             </VBox>
 

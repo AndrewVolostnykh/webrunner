@@ -1,23 +1,46 @@
 package andrew_volostnykh.webrunner.service.test_engine;
 
+import andrew_volostnykh.webrunner.DependenciesContainer;
+
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VarsApplicator {
-	private static final Pattern VAR_PATTERN = Pattern.compile("\\{\\{(.+?)}}");
 
-	// FIXME: invalid arch
-	public String applyVariables(String body, Map<String, String> values) {
-		Matcher matcher = VAR_PATTERN.matcher(body);
-		StringBuffer sb = new StringBuffer();
+	private static final Pattern VAR_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
 
-		while (matcher.find()) {
-			String varName = matcher.group(1).trim();
-			String replacement = values.getOrDefault(varName, "undefined");
-			matcher.appendReplacement(sb, replacement);
+	public String applyVariables(
+		String jsonBody,
+		Map<String, Object> vars
+	) {
+		try {
+			String result = jsonBody;
+
+			for (Map.Entry<String, Object> v : vars.entrySet()) {
+				String placeholder = "{{" + v.getKey() + "}}";
+
+				// Якщо значення — примітив, просто підставляємо як є
+				if (v.getValue() instanceof String ||
+					v.getValue() instanceof Number ||
+					v.getValue() instanceof Boolean) {
+					result = result.replace(placeholder, String.valueOf(v.getValue()));
+				} else {
+					// Якщо об'єкт або масив — конвертуємо в JSON
+					String jsonValue = DependenciesContainer.getObjectMapper().writeValueAsString(v.getValue());
+					result = result.replace(placeholder, jsonValue);
+				}
+			}
+
+			// Повернути красиво відформатований JSON
+			return DependenciesContainer.getObjectMapper()
+				.writerWithDefaultPrettyPrinter()
+				.writeValueAsString(
+					DependenciesContainer.getObjectMapper().readTree(result)
+				);
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return jsonBody;
 		}
-		matcher.appendTail(sb);
-		return sb.toString();
 	}
 }

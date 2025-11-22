@@ -1,9 +1,7 @@
 plugins {
 	id 'java'
 	id 'application'
-	id 'org.javamodularity.moduleplugin' version '1.8.12'
-	id 'org.openjfx.javafxplugin' version '0.0.13'
-	id 'org.beryx.jlink' version '2.25.0'
+	id 'org.openjfx.javafxplugin' version '0.0.13' // 🔥 Повертаємо
 }
 
 group 'andrew_volostnykh'
@@ -20,18 +18,16 @@ ext {
 sourceCompatibility = '21'
 targetCompatibility = '21'
 
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
-}
-
 application {
-	mainModule = 'andrew_volostnykh.webrunner'
 	mainClass = 'andrew_volostnykh.webrunner.WebRunnerApplication'
 }
 
 javafx {
 	version = '21'
-	modules = ['javafx.controls', 'javafx.fxml']
+	modules = [
+			'javafx.controls',
+			'javafx.fxml'
+	]
 }
 
 dependencies {
@@ -41,6 +37,7 @@ dependencies {
 	implementation 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
 	implementation 'org.kordamp.ikonli:ikonli-materialdesign-pack:12.3.1'
 	implementation 'org.kordamp.ikonli:ikonli-materialdesign2-pack:12.3.1'
+	implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
 
 	implementation 'org.fxmisc.richtext:richtextfx:0.11.0'
 
@@ -48,28 +45,28 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.2'
 
+	// Graal Polyglot
+	implementation "org.graalvm.polyglot:polyglot:24.1.0"
+	implementation "org.graalvm.polyglot:js:24.1.0"
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok:1.18.42'
 	annotationProcessor 'org.projectlombok:lombok:1.18.42'
-
 	testCompileOnly 'org.projectlombok:lombok:1.18.42'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 
-	testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+	testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
 
 test {
 	useJUnitPlatform()
 }
 
-jlink {
-	imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
-	options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-	launcher {
-		name = 'app'
-	}
-}
-
-jlinkZip {
-	group = 'distribution'
+run {
+	// GraalJS рекомендація
+	jvmArgs = [
+			'-Dpolyglot.engine.WarnInterpreterOnly=false',
+			'--add-opens=java.base/java.lang=ALL-UNNAMED'
+	]
 }
