@@ -1,10 +1,11 @@
 package andrew_volostnykh.webrunner.service.test_engine;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
+import andrew_volostnykh.webrunner.service.AbstractService;
 
 import java.util.Map;
 
-public class VarsApplicator {
+public class VarsApplicator extends AbstractService {
 
 	public String applyVariables(
 		String jsonBody,
@@ -33,7 +34,7 @@ public class VarsApplicator {
 				);
 
 		} catch (Exception ex) {
-			System.err.println("Exception occurred: " + ex.getMessage());
+			logger.logMessage("ERROR: " + ex.getMessage());
 			return jsonBody;
 		}
 	}

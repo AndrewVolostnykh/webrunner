@@ -1,104 +1,42 @@
-/* ==== 🌑 GLOBAL DARK THEME =================================== */
-.root {
-    -fx-background-color: #1e1e1e;
-    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
-    -fx-text-fill: #dcdcdc;
-}
-
-/* ==== 🔲 buttons ================================================= */
-.button {
-    -fx-background-color: #2d2d2d;
-    -fx-text-fill: #dcdcdc;
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
-    -fx-border-color: #3a3a3a;
-    -fx-border-width: 1;
-}
-.button:hover { -fx-background-color: #3a3a3a; }
-.button:pressed { -fx-background-color: #505050; }
-
-#sendButton {
-    -fx-padding: 4px 8px;
-    -fx-background-color: #3a3a3a;
-}
-#sendButton:hover { -fx-background-color: #4a4a4a; }
-#sendButton .ikonli-font-icon { -fx-icon-color: white; }
-
-/* ==== ComboBox & TextField ==== */
-.combo-box, .text-field {
-    -fx-background-color: #2d2d2d;
-    -fx-text-fill: #dcdcdc;
-    -fx-border-color: #3a3a3a;
-}
-.combo-box .list-cell { -fx-text-fill: #dcdcdc; }
-.combo-box-popup .list-view {
-    -fx-background-color: #2a2a2a;
-    -fx-control-inner-background: #2a2a2a;
-}
-.combo-box-popup .list-cell {
-    -fx-background-color: #2a2a2a;
-    -fx-text-fill: #dcdcdc;
-}
-.combo-box-popup .list-cell:hover { -fx-background-color: #3a3a3a; }
-
-/* ==== TextArea ==== */
-.text-area {
-    -fx-background-color: #1b1b1b;
-    -fx-control-inner-background: #1b1b1b;
-    -fx-text-fill: #dcdcdc;
+/* Консольний стилі для response і body */
+.text-area, #responseArea, LogArea {
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
     -fx-font-size: 13px;
     -fx-padding: 8px;
 }
 
-/* ==== TabPane ==== */
-.tab-pane { -fx-background-color: #1e1e1e; }
-.tab-pane > .tab-header-area { -fx-background-color: #1e1e1e; }
-.tab { -fx-background-color: #2c2c2c; }
-.tab:selected { -fx-background-color: #404040; }
-.tab-label { -fx-text-fill: #bfbfbf; }
-.tab:selected .tab-label { -fx-text-fill: white; }
-.tab-pane > .tab-content-area { -fx-background-color: #1b1b1b; }
-.tab-content-area { -fx-border-color: #2a2a2a; -fx-border-width: 1 0 0 0; }
+/* Send button позбавлений "квадратності" */
+#sendButton {
+    -fx-padding: 6px 10px;
+}
+#sendButton .ikonli-font-icon {
+    -fx-icon-color: white;
+}
 
-/* ==== TableView ==== */
-.table-view { -fx-background-color: #1b1b1b; }
-.table-view .column-header-background { -fx-background-color: #252526; }
-.table-view .column-header { -fx-background-color: #252526; -fx-text-fill: #dcdcdc; }
-.table-row-cell { -fx-background-color: #1b1b1b; -fx-text-fill: #dcdcdc; }
-.table-row-cell:selected { -fx-background-color: #333333; }
-.table-view .placeholder .label { -fx-text-fill: #a6a6a6; }
-
-/* ==== ScrollPane ==== */
-.scroll-pane { -fx-background-color: #1b1b1b; }
-.scroll-pane .viewport { -fx-background-color: #1b1b1b; }
-
-VBox, .stack-pane { -fx-background-color: #1b1b1b; }
-
-/* ==== SplitPane ==== */
-.split-pane { -fx-background-color: #1e1e1e; }
+/* Роздільник SplitPane трішки тонший */
 .split-pane > .split-pane-divider {
-    -fx-background-color: #303030;
     -fx-padding: 1px;
-    -fx-border-color: #404040;
 }
 
-/* ==== Label ==== */
-.label { -fx-text-fill: #dcdcdc; }
-
-/* ==== Height unification ==== */
-.combo-box, .text-field, .button { -fx-pref-height: 32px; }
-
-/*Tree*/
-.tree-cell .ikonli-font-icon {
-    -fx-padding: 0 6px 0 0;
-}
-
-/*Headers table*/
+/* Стиль headers rows (опційно) */
 .headers-row {
-    -fx-background-color: #2d2d2d;
-    -fx-padding: 4px;
-    -fx-border-color: #3a3a3a;
-    -fx-border-width: 1px;
-    -fx-background-radius: 4px;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: derive(-color-bg-default, -10%);
+    -fx-padding: 6px;
+}
+
+.window-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #aaaaaa;
+    -fx-padding: 4 10;
+}
+
+.window-button:hover {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: white;
+}
+
+.window-close-button:hover {
+    -fx-background-color: #c42b1c;
+    -fx-text-fill: white;
 }

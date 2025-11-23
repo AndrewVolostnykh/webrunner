@@ -1,5 +1,7 @@
 package andrew_volostnykh.webrunner;
 
+import andrew_volostnykh.webrunner.grphics.components.LogArea;
+import andrew_volostnykh.webrunner.service.Logger;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,9 +16,20 @@ public class DependenciesContainer {
 			SerializationFeature.INDENT_OUTPUT
 		);
 
-	@Getter
-	private static final VarsApplicator varsApplicator = new VarsApplicator();
+	private static final Logger logger = new Logger();
 
-	@Getter
-	private static final JsExecutorService jsExecutorService = new JsExecutorService();
+	public static VarsApplicator varsApplicator(
+	) {
+		return
+			new VarsApplicator();
+	}
+
+	public static JsExecutorService jsExecutorService(
+	) {
+		return new JsExecutorService();
+	}
+
+	public static Logger logger() {
+		return logger;
+	}
 }

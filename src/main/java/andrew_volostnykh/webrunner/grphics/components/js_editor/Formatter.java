@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.components.editor;
+package andrew_volostnykh.webrunner.grphics.components.js_editor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

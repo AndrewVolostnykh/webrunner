@@ -1,5 +1,6 @@
-package andrew_volostnykh.webrunner.components.editor;
+package andrew_volostnykh.webrunner.grphics.components.js_editor;
 
+import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
@@ -13,18 +14,25 @@ public class JsCodeEditor
 	extends CodeArea {
 
 	public JsCodeEditor() {
+		this.getStylesheets().add(
+			Objects.requireNonNull(getClass().getResource("/ui/styles/code-style.css")).toExternalForm()
+		);
+		this.setStyle("-fx-caret-color: white;");
+		this.getStyleClass().add("code-area");
+
 		setupEditor();
 	}
 
 	private void setupEditor() {
-		setParagraphGraphicFactory(LineNumberFactory.get(this));
-		getStylesheets().add(
-			Objects.requireNonNull(getClass().getResource("/ui/styles/code-style.css")).toExternalForm()
-		);
+		setParagraphGraphicFactory(line -> {
+			Node lineNumber = LineNumberFactory.get(this).apply(line);
+			lineNumber.getStyleClass().add("line-number");
+			return lineNumber;
+		});
+
 		setOnKeyTyped(this::handleAutoBrackets);
 		addEventFilter(KeyEvent.KEY_PRESSED, this::handleShortcuts);
 
-		// Підсвітка
 		textProperty().addListener((obs, oldText, newText) ->
 									   setStyleSpans(0, SyntaxHighlighter.computeHighlighting(newText))
 		);

@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.components;
+package andrew_volostnykh.webrunner.grphics.components.json_editor;
 
 import andrew_volostnykh.webrunner.service.JsonBeautifier;
 import javafx.scene.input.KeyCode;
@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import java.util.Objects;
+
 public class JsonCodeArea extends CodeArea {
 
 	public JsonCodeArea() {
@@ -16,14 +18,21 @@ public class JsonCodeArea extends CodeArea {
 		this.setPrefHeight(300);
 		VBox.setVgrow(this, Priority.ALWAYS);
 
-		// 🔹 Beautify по Ctrl+Alt+L
+		this.getStylesheets().add(
+			Objects.requireNonNull(getClass().getResource("/ui/styles/json-style.css")).toExternalForm()
+		);
+		this.setStyle("-fx-caret-color: white;");
+
+		textProperty().addListener((obs, oldText, newText) ->
+									   setStyleSpans(0, SyntaxHighlighter.computeHighlighting(newText))
+		);
+
 		this.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			if (event.isControlDown() && event.isAltDown() && event.getCode() == KeyCode.L) {
 				beautifyBody();
 			}
 		});
 
-		// 🔹 Автодужки
 		this.setOnKeyTyped(event -> {
 			String ch = event.getCharacter();
 			int pos = this.getCaretPosition();

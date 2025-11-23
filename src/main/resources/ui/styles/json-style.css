@@ -17,30 +17,37 @@
     -fx-background-color: transparent;
 }
 
-.keyword {
-    -fx-fill: #569CD6;
-    -fx-font-weight: bold;
+.json-key {
+    -fx-fill: #9CDCFE;
 }
 
-.string {
+.json-string {
     -fx-fill: #CE9178;
 }
 
-.number {
+.json-number {
     -fx-fill: #B5CEA8;
 }
 
-.brace {
-    -fx-fill: #D4D4D4;
+.json-boolean {
+    -fx-fill: #569CD6;
 }
 
-.variable {
-    -fx-fill: #C586C0;
+.json-null {
+    -fx-fill: #569CD6;
     -fx-font-style: italic;
 }
 
-.comment {
-    -fx-fill: #6A9955;
+.json-variable {
+    -fx-fill: #C586C0;
+}
+
+.json-brace {
+    -fx-fill: #D4D4D4;
+}
+
+.plain-text {
+    -fx-fill: #FFFFFF;
 }
 
 .line-number {
@@ -48,10 +55,5 @@
     -fx-text-fill: #bfbfbf;         /* колір цифр */
     -fx-padding: 2 8 0 8;           /* внутрішні відступи */
     -fx-font-size: 12px;
-    -fx-font-family: Consolas, "JetBrains Mono", monospace;
-}
-
-.plain-text {
-    -fx-fill: #f0f0f0; /* білий текст */
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
 }

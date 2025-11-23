@@ -1,7 +1,8 @@
 package andrew_volostnykh.webrunner.service.http;
 
+import andrew_volostnykh.webrunner.DependenciesContainer;
+import andrew_volostnykh.webrunner.service.AbstractService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,12 +11,8 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
-public class HttpRequestService {
-
-	private final ObjectMapper objectMapper = new ObjectMapper()
-		.enable(
-			SerializationFeature.INDENT_OUTPUT
-		);
+public class HttpRequestService
+	extends AbstractService {
 
 	public HttpResponseData sendRequest(
 		String method,
@@ -37,6 +34,7 @@ public class HttpRequestService {
 				default -> builder.GET();
 			}
 
+			// TODO: set headers etc separately in HttpResponseData
 			HttpResponse<String> response = client.send(
 				builder.build(),
 				HttpResponse.BodyHandlers.ofString()
@@ -51,9 +49,13 @@ public class HttpRequestService {
 
 	public String formatJson(String json) {
 		try {
+			ObjectMapper objectMapper = DependenciesContainer.getObjectMapper();
+
 			Object obj = objectMapper.readValue(json, Object.class);
+
 			return objectMapper.writeValueAsString(obj);
 		} catch (Exception e) {
+			logger.logMessage("WARN: Cannot beautify json: " + e.getMessage());
 			return json;
 		}
 	}
