@@ -1,0 +1,30 @@
+.code-area {
+    -fx-font-family: "Consolas", monospace;
+    -fx-font-size: 12px;
+}
+
+.keyword {
+    -fx-fill: #569CD6;
+    -fx-font-weight: bold;
+}
+
+.string {
+    -fx-fill: #CE9178;
+}
+
+.number {
+    -fx-fill: #B5CEA8;
+}
+
+.brace {
+    -fx-fill: #D4D4D4;
+}
+
+.variable {
+    -fx-fill: #C586C0;
+    -fx-font-style: italic;
+}
+
+.comment {
+    -fx-fill: #6A9955;
+}

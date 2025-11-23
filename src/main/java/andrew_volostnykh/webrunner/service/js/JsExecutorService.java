@@ -1,5 +1,9 @@
 package andrew_volostnykh.webrunner.service.js;
 
+import andrew_volostnykh.webrunner.DependenciesContainer;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
@@ -34,5 +38,46 @@ public class JsExecutorService {
 			}
 
 			return map;
+	}
+
+	public void handleAfterResponse(String jsCode, String responseBody, Map<String, Object> vars) {
+
+		try (Context context = Context.newBuilder("js")
+			.allowAllAccess(true)
+			.option("js.ecmascript-version", "2023")
+			.build()) {
+
+
+			// Передаємо response як об'єкт
+			context.getBindings("js").putMember("response", parseResponse(responseBody));
+
+			// Передаємо vars
+			context.getBindings("js").putMember("vars", vars);
+
+			// 🔹 Реєструємо predefined функції
+			PredefinedFunctions.registerHelperFunctions(context);
+
+			Value result = context.eval("js", jsCode);
+
+			JsonNode node = null;
+			String message = null;
+			if (result.hasMembers()) {
+				// JSON-like result
+				node = DependenciesContainer.getObjectMapper().valueToTree(result.as(Map.class));
+			} else {
+				// fallback: просто текст
+				message = result.asString();
+			}
+
+			System.err.println("RESULT!!!::: " + node + " !!!OR!!! " + message);
+
+		} catch (Exception ex) {
+			System.err.println("❌ JS AfterResponse error: " + ex.getMessage());
+		}
+	}
+
+	private Map<String, Object> parseResponse(String responseBody) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(responseBody, new TypeReference<>() {});
 	}
 }

@@ -1,0 +1,70 @@
+package andrew_volostnykh.webrunner.components.editor;
+
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.LineNumberFactory;
+
+import java.util.Objects;
+
+public class JsCodeEditor
+	extends CodeArea {
+
+	public JsCodeEditor() {
+		setupEditor();
+	}
+
+	private void setupEditor() {
+		setParagraphGraphicFactory(LineNumberFactory.get(this));
+		getStylesheets().add(
+			Objects.requireNonNull(getClass().getResource("/ui/styles/code-style.css")).toExternalForm()
+		);
+		setOnKeyTyped(this::handleAutoBrackets);
+		addEventFilter(KeyEvent.KEY_PRESSED, this::handleShortcuts);
+
+		// Підсвітка
+		textProperty().addListener((obs, oldText, newText) ->
+									   setStyleSpans(0, SyntaxHighlighter.computeHighlighting(newText))
+		);
+	}
+
+	private void handleAutoBrackets(KeyEvent event) {
+		String c = event.getCharacter();
+
+		String match = switch (c) {
+			case "{" -> "}";
+			case "[" -> "]";
+			case "(" -> ")";
+			case "\"" -> "\"";
+			default -> null;
+		};
+		if (match != null) {
+			int pos = getCaretPosition();
+			replaceText(pos, pos, match);
+			moveTo(pos); // 🟢 курсор між дужками
+		}
+	}
+
+	private void handleShortcuts(KeyEvent event) {
+		if (event.getCode() == KeyCode.L && event.isControlDown() && event.isAltDown()) {
+			formatAsJson();
+			event.consume();
+		}
+	}
+
+	public void formatAsJson() {
+		try {
+			String formatted = Formatter.formatJson(getText());
+			replaceText(formatted);
+		} catch (Exception ignore) {}
+	}
+
+	// TODO: maybe attach it directly in MainController?
+	public void attachTo(VBox container) {
+		VBox.setVgrow(this, Priority.ALWAYS);
+		container.getChildren().add(this);
+	}
+
+}

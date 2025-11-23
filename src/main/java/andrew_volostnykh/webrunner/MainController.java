@@ -3,8 +3,9 @@ package andrew_volostnykh.webrunner;
 import andrew_volostnykh.webrunner.collections.CollectionNode;
 import andrew_volostnykh.webrunner.collections.RequestDefinition;
 import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
-import andrew_volostnykh.webrunner.components.JsCodeArea;
 import andrew_volostnykh.webrunner.components.JsonCodeArea;
+import andrew_volostnykh.webrunner.components.LogArea;
+import andrew_volostnykh.webrunner.components.editor.JsCodeEditor;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -24,15 +25,13 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import org.fxmisc.richtext.CodeArea;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MainController {
 
@@ -48,7 +47,14 @@ public class MainController {
 
 	@FXML
 	private VBox varsContainer;
-	private CodeArea beforeRequestCodeArea;
+	private JsCodeEditor beforeRequestCodeArea;
+
+	@FXML
+	private VBox afterResponseContainer;
+	private JsCodeEditor afterResponseCodeArea;
+
+	@FXML
+	private TextArea logsArea;
 
 	@FXML
 	private TextField headerKeyField;
@@ -71,29 +77,35 @@ public class MainController {
 
 	private final HttpRequestService httpService = new HttpRequestService();
 
-	// =======================================
-	// 🔥 ІНІЦІАЛІЗАЦІЯ
-	// =======================================
 	@FXML
 	public void initialize() {
-		beforeRequestCodeArea = new JsCodeArea();
+		beforeRequestCodeArea = new JsCodeEditor();
 		beforeRequestCodeArea.replaceText("""
-											  var vars = {
-											  generatedName: "rnadom",
-											  userId: 123
-											  }
-											  """);
-		varsContainer.getChildren().add(beforeRequestCodeArea);
+													var vars = {
+													generatedName: "rnadom",
+													userId: 123
+													}
+													""");
+		beforeRequestCodeArea.attachTo(varsContainer);
+
+		afterResponseCodeArea = new JsCodeEditor();
+		afterResponseCodeArea.replaceText("""
+													// Приклад:
+													//assert(response.json.name, vars.generatedName, "Unexpected response name")
+													//""");
+		afterResponseCodeArea.attachTo(afterResponseContainer);
 
 		bodyArea = new JsonCodeArea();
 		bodyArea.replaceText("""
-								 {
-								 	"name": "{{generatedName}}",
-								 	"userId": "{{userId}}""
-								 }
-								 """);
+									{
+										"name": "{{generatedName}}",
+										"userId": "{{userId}}""
+									}
+									""");
 
 		bodyContainer.getChildren().add(bodyArea);
+
+		logsArea = new LogArea();
 
 		Button beautifyBtn = new Button("Beautify JSON");
 		beautifyBtn.setOnAction(e -> bodyArea.beautifyBody());
@@ -148,53 +160,71 @@ public class MainController {
 		});
 	}
 
-	// =======================================
-	// 🚀 Надіслати запит
-	// =======================================
 	@FXML
 	public void sendRequest() {
 		statusLabel.setText("Sending...");
 		responseArea.setText("");
 
-		CompletableFuture.supplyAsync(() -> {
-			try {
+		AtomicReference<Map<String, Object>> vars = new AtomicReference<>();
+
+		CompletableFuture
+			.supplyAsync(() -> {
 				Map<String, String> headersMap = new HashMap<>();
 				headers.forEach(entry -> headersMap.put(entry.getKey(), entry.getValue()));
 
 				String preparedBody = bodyArea.getText();
 				if (beforeRequestCodeArea.getText() != null && !beforeRequestCodeArea.getText().isBlank()) {
 
-					Map<String, Object> vars = DependenciesContainer.getJsExecutorService()
+					Map<String, Object> bodyVars = DependenciesContainer.getJsExecutorService()
 						.executeJsVariables(beforeRequestCodeArea.getText());
 
+					vars.set(bodyVars);
+
 					preparedBody = DependenciesContainer.getVarsApplicator()
-						.applyVariables(
-							bodyArea.getText(),
-							vars
-						);
+						.applyVariables(bodyArea.getText(), bodyVars);
 				}
 
-				var response = httpService.sendRequest(
-					methodCombo.getValue(),
-					urlField.getText(),
-					preparedBody,
-					headersMap
-				);
+				try {
+					return httpService.sendRequest(
+						methodCombo.getValue(),
+						urlField.getText(),
+						preparedBody,
+						headersMap
+					);
+				} catch (Exception e) {
+					System.err.println("Exception occurred: " + e.getMessage());
+					return null;
+				}
+			})
+			.exceptionally(ex -> {
+				Platform.runLater(() -> {
+					statusLabel.setText("Error");
+					responseArea.setText(ex.getMessage());
+				});
+				return null;
+			})
+			.thenAccept(result -> Platform.runLater(() -> {
+				if (result == null) {
+					return;
+				}
 
-				String formattedBody = httpService.formatJson(response.body());
-				return "Status: " + response.statusCode() + "\n\n" + formattedBody;
-			} catch (Exception e) {
-				return "Error: " + e.getMessage();
-			}
-		}).thenAccept(result -> Platform.runLater(() -> {
-			statusLabel.setText("Done");
-			responseArea.setText(result);
-		}));
+				String formattedBody = httpService.formatJson(result.body());
+				statusLabel.setText("Done");
+				responseArea.setText("Status " + result.statusCode() + "\n\n" + formattedBody);
+
+				try {
+					DependenciesContainer.getJsExecutorService()
+						.handleAfterResponse(
+							afterResponseCodeArea.getText(),
+							result.body(),
+							vars.get()
+						);
+				} catch (Exception e) {
+					System.err.println("❌ Error in afterResponse JS: " + e.getMessage());
+				}
+			}));
 	}
 
-	// =======================================
-	// 🔄 Завантажити реквест
-	// =======================================
 	private void loadRequest(RequestDefinition req) {
 		if (methodListener != null) {
 			methodCombo.valueProperty().removeListener(methodListener);
@@ -254,9 +284,7 @@ public class MainController {
 	// 🆕 Створення нового запиту
 	// =======================================
 	@FXML
-	public void createNewRequestOrFolder(
-		ActionEvent event
-	) {
+	public void createNewRequestOrFolder(ActionEvent event) {
 		TextInputDialog dialog = new TextInputDialog("New Request");
 		dialog.setTitle("Create Request");
 		dialog.setHeaderText("Create new HTTP Request");
@@ -264,25 +292,27 @@ public class MainController {
 
 		dialog.showAndWait().ifPresent(name -> {
 			if (!name.isBlank()) {
+
 				RequestDefinition request = new RequestDefinition(
 					name,
-					"POST",
-					"https://httpbin.org/post",
+					"GET",
+					"",
 					new HashMap<>(),
 					"",
 					""
 				);
 
 				CollectionNode newRequestNode = new CollectionNode(name, false, null, request);
-				TreeItem<CollectionNode> newNode = new TreeItem<>(newRequestNode);
 
+				persistenceService.getRootNode().addChild(newRequestNode);
+
+				TreeItem<CollectionNode> newNode = new TreeItem<>(newRequestNode);
 				collectionTree.getRoot().getChildren().add(newNode);
-				collectionTree.getRoot().setExpanded(true);
 
 				persistenceService.save();
 
-				loadRequest(request);
 				collectionTree.getSelectionModel().select(newNode);
+				loadRequest(request);
 			}
 		});
 	}
@@ -334,4 +364,7 @@ public class MainController {
 		return item;
 	}
 
+	public void clearLogs() {
+		logsArea.clear();
+	}
 }

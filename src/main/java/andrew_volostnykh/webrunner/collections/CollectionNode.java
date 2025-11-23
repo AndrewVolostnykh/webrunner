@@ -16,6 +16,13 @@ public class CollectionNode {
 	private List<CollectionNode> children = new ArrayList<>();
 	private RequestDefinition request;
 
+	public void addChild(CollectionNode node) {
+		if (children == null) {
+			children = new ArrayList<>();
+		}
+		children.add(node);
+	}
+
 	@Override
 	public String toString() {
 		return name;
