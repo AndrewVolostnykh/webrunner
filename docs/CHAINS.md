@@ -1,0 +1,1 @@
+Using chains you can call requests one after one setting needed global and request variables 

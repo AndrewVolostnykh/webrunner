@@ -42,11 +42,13 @@ public class HttpRequestService
 
 			return new HttpResponseData(
 				response.statusCode(),
+				response.headers().map(),
 				response.body()
 			);
 		}
 	}
 
+	// FIXME: move to separate Beautifier
 	public String formatJson(String json) {
 		try {
 			ObjectMapper objectMapper = DependenciesContainer.getObjectMapper();

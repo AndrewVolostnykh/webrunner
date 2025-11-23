@@ -17,6 +17,14 @@
     -fx-background-color: transparent;
 }
 
+.code-area .caret {
+    -fx-stroke: white;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: white;
+}
+
 .json-key {
     -fx-fill: #9CDCFE;
 }

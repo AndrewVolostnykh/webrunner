@@ -12,9 +12,13 @@ class PredefinedFunctions {
 	static void registerCommonFunctions(Context context) {
 		context.getBindings("js").putMember("log", (ProxyExecutable) args -> {
 			if (args.length > 0) {
-				// TODO: run through all args
-				String msg = args[0].asString();
-				DependenciesContainer.logger().logMessage(msg);
+				StringBuilder logBuilder = new StringBuilder();
+				for (int i = 0; i < args.length; i++) {
+					logBuilder.append(args[i]);
+					logBuilder.append(", ");
+				}
+
+				DependenciesContainer.logger().logMessage(logBuilder.toString());
 			}
 			return null;
 		});

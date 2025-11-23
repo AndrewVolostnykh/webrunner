@@ -1,6 +1,7 @@
 package andrew_volostnykh.webrunner.grphics.components.json_editor;
 
-import andrew_volostnykh.webrunner.service.JsonBeautifier;
+import andrew_volostnykh.webrunner.service.TextBeautifierService;
+import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
@@ -10,7 +11,8 @@ import org.fxmisc.richtext.LineNumberFactory;
 
 import java.util.Objects;
 
-public class JsonCodeArea extends CodeArea {
+public class JsonCodeArea
+	extends CodeArea {
 
 	public JsonCodeArea() {
 		super();
@@ -22,6 +24,12 @@ public class JsonCodeArea extends CodeArea {
 			Objects.requireNonNull(getClass().getResource("/ui/styles/json-style.css")).toExternalForm()
 		);
 		this.setStyle("-fx-caret-color: white;");
+
+		setParagraphGraphicFactory(line -> {
+			Node lineNumber = LineNumberFactory.get(this).apply(line);
+			lineNumber.getStyleClass().add("line-number");
+			return lineNumber;
+		});
 
 		textProperty().addListener((obs, oldText, newText) ->
 									   setStyleSpans(0, SyntaxHighlighter.computeHighlighting(newText))
@@ -56,7 +64,7 @@ public class JsonCodeArea extends CodeArea {
 
 	public void beautifyBody() {
 		try {
-			String pretty = JsonBeautifier.formatJson(this.getText());
+			String pretty = TextBeautifierService.formatJson(this.getText());
 			this.replaceText(pretty);
 		} catch (Exception e) {
 		}

@@ -15,4 +15,8 @@ public class Logger {
 	public String getLogs() {
 		return logs.toString();
 	}
+
+	public void clearLogs() {
+		logs.delete(0, logs.length());
+	}
 }

@@ -16,6 +16,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.layout.AnchorPane?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="andrew_volostnykh.webrunner.MainController"
       spacing="0"
@@ -45,8 +46,8 @@
             <HBox spacing="10">
                 <Label text="Collections" styleClass="label"/>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button text="+" onAction="#createNewRequestOrFolder"/>
-                <Button text="+ Collection" onAction="#createNewRequestOrFolder"/>
+<!--                <Button text="+" onAction="#createNewRequest"/>-->
+<!--                <Button text="+ Collection" onAction="#createNewFolder"/>-->
             </HBox>
 
             <TreeView fx:id="collectionTree" VBox.vgrow="ALWAYS"/>
@@ -119,10 +120,31 @@
                     </TabPane>
                 </VBox>
 
-                <!-- Нижня зона (Response) -->
-                <VBox spacing="5" VBox.vgrow="ALWAYS">
+                <VBox spacing="5" VBox.vgrow="ALWAYS" SplitPane.resizableWithParent="true">
                     <Label fx:id="statusLabel"/>
-                    <TextArea fx:id="responseArea" editable="false" VBox.vgrow="ALWAYS"/>
+
+                    <TabPane VBox.vgrow="ALWAYS">
+                        <Tab text="Result">
+                            <AnchorPane>
+                                <TextArea fx:id="responseArea"
+                                          editable="false"
+                                          AnchorPane.topAnchor="0"
+                                          AnchorPane.bottomAnchor="0"
+                                          AnchorPane.leftAnchor="0"
+                                          AnchorPane.rightAnchor="0"/>
+                            </AnchorPane>
+                        </Tab>
+                        <Tab text="Headers">
+                            <AnchorPane>
+                                <TextArea fx:id="responseHeaders"
+                                          editable="false"
+                                          AnchorPane.topAnchor="0"
+                                          AnchorPane.bottomAnchor="0"
+                                          AnchorPane.leftAnchor="0"
+                                          AnchorPane.rightAnchor="0"/>
+                            </AnchorPane>
+                        </Tab>
+                    </TabPane>
                 </VBox>
             </SplitPane>
         </VBox>

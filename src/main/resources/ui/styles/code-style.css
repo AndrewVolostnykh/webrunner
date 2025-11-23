@@ -17,6 +17,14 @@
     -fx-background-color: transparent;
 }
 
+.code-area .caret {
+    -fx-stroke: white;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: white;
+}
+
 .keyword {
     -fx-fill: #569CD6;
     -fx-font-weight: bold;
@@ -44,14 +52,14 @@
 }
 
 .line-number {
-    -fx-background-color: #2a2a2a; /* фон номера рядка */
-    -fx-text-fill: #bfbfbf;         /* колір цифр */
-    -fx-padding: 2 8 0 8;           /* внутрішні відступи */
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #bfbfbf;
+    -fx-padding: 2 8 0 8;
     -fx-font-size: 12px;
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
 }
 
 .plain-text {
-    -fx-fill: #f0f0f0; /* білий текст */
+    -fx-fill: #f0f0f0;
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
 }

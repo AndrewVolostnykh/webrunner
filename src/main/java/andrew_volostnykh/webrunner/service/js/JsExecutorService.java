@@ -9,8 +9,8 @@ import org.graalvm.polyglot.Value;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
+// TODO: add global scope variables
 public class JsExecutorService extends AbstractService {
 
 	public Map<String, Object> executeJsVariables(String jsCode) {
@@ -47,6 +47,7 @@ public class JsExecutorService extends AbstractService {
 		) {
 
 			context.getBindings("js").putMember("response", parseResponse(responseBody));
+			// TODO: add headers
 
 			context.getBindings("js").putMember("vars", vars);
 
@@ -54,6 +55,10 @@ public class JsExecutorService extends AbstractService {
 			PredefinedFunctions.registerCommonFunctions(context);
 
 			Value result = context.eval("js", jsCode);
+
+			if (result.isNull()) {
+				return;
+			}
 
 			if (result.hasMembers()) {
 				logger.logMessage(

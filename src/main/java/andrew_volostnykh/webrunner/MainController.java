@@ -6,7 +6,7 @@ import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistence
 import andrew_volostnykh.webrunner.grphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.grphics.components.LogArea;
 import andrew_volostnykh.webrunner.grphics.components.js_editor.JsCodeEditor;
-import andrew_volostnykh.webrunner.service.Logger;
+import andrew_volostnykh.webrunner.service.TextBeautifierService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
@@ -21,7 +21,9 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -29,6 +31,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -36,12 +39,16 @@ import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MainController {
+
+	private final FontIcon folderIcon = new FontIcon("mdi-folder:16");
+	private final FontIcon requestIcon  = new FontIcon("mdi-web");
 
 	private double xOffset = 0;
 	private double yOffset = 0;
@@ -76,6 +83,8 @@ public class MainController {
 
 	@FXML
 	private TextArea responseArea;
+	@FXML
+	private TextArea responseHeaders;
 	@FXML
 	private Label statusLabel;
 	@FXML
@@ -135,23 +144,97 @@ public class MainController {
 		});
 
 		collectionTree.setCellFactory(treeView -> new TreeCell<>() {
-			private final FontIcon folderIcon = new FontIcon("mdi-folder:16");
-			private final FontIcon requestIcon = new FontIcon("mdi-file-document:16");
+			private final FontIcon folderIcon  = new FontIcon("mdi-folder:16");
+			private final FontIcon requestIcon = new FontIcon("mdi-web:16");
+
+			private final ContextMenu folderMenu = new ContextMenu();
+			private final MenuItem addRequestItem = new MenuItem("Add Request");
+			private final MenuItem addFolderItem  = new MenuItem("Add Folder");
+			private final MenuItem deleteFolderItem = new MenuItem("Delete Folder");
+
+			private final ContextMenu requestMenu = new ContextMenu();
+			private final MenuItem deleteRequestItem = new MenuItem("Delete Request");
+
+			{
+				// 📎 Папка
+				addRequestItem.setOnAction(e -> createRequestInsideNode(getItem(), getTreeItem()));
+				addFolderItem.setOnAction(e -> createFolderInsideNode(getItem(), getTreeItem()));
+				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
+				folderMenu.getItems().addAll(addRequestItem, addFolderItem, deleteFolderItem);
+
+				// 🧾 Запит
+				deleteRequestItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
+				requestMenu.getItems().add(deleteRequestItem);
+			}
 
 			@Override
-			protected void updateItem(
-				CollectionNode item,
-				boolean empty
-			) {
+			protected void updateItem(CollectionNode item, boolean empty) {
 				super.updateItem(item, empty);
 
 				if (empty || item == null) {
 					setText(null);
 					setGraphic(null);
+					setContextMenu(null);
 				} else {
 					setText(item.getName());
 					setGraphic(item.isFolder() ? folderIcon : requestIcon);
+
+					setContextMenu(item.isFolder() ? folderMenu : requestMenu);
 				}
+			}
+		});
+	}
+
+	private void deleteNode(CollectionNode node, TreeItem<CollectionNode> treeItem) {
+		TreeItem<CollectionNode> parent = treeItem.getParent();
+		if (parent != null) {
+			parent.getChildren().remove(treeItem);
+			parent.getValue().getChildren().remove(node);
+			persistenceService.save();
+		}
+	}
+
+	private void createFolderInsideNode(CollectionNode folderNode, TreeItem<CollectionNode> folderItem) {
+		TextInputDialog dialog = new TextInputDialog("New Folder");
+		dialog.setTitle("Create Folder");
+		dialog.setHeaderText("Enter folder name:");
+		dialog.showAndWait().ifPresent(name -> {
+			if (!name.isBlank()) {
+				CollectionNode newFolder = new CollectionNode(name, true, new ArrayList<>(), null);
+				folderNode.addChild(newFolder);
+
+				TreeItem<CollectionNode> newItem = new TreeItem<>(newFolder);
+				folderItem.getChildren().add(newItem);
+
+				persistenceService.save();
+			}
+		});
+	}
+
+	private void createRequestInsideNode(CollectionNode folderNode, TreeItem<CollectionNode> folderItem) {
+		TextInputDialog dialog = new TextInputDialog("New Request");
+		dialog.setTitle("Create Request");
+		dialog.setHeaderText("Create new HTTP Request");
+		dialog.setContentText("Enter request name:");
+
+		dialog.showAndWait().ifPresent(name -> {
+			if (!name.isBlank()) {
+				RequestDefinition request = new RequestDefinition(name, "GET", "", new HashMap<>(), "", "");
+
+				CollectionNode newNode = new CollectionNode(
+					name,
+					false,
+					null,
+					request
+				);
+
+				folderNode.addChild(newNode);
+				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);
+				folderItem.getChildren().add(newItem);
+
+				persistenceService.save();
+				collectionTree.getSelectionModel().select(newItem);
+				loadRequest(request);
 			}
 		});
 	}
@@ -205,8 +288,9 @@ public class MainController {
 				}
 
 				String formattedBody = httpService.formatJson(result.body());
-				statusLabel.setText("Done");
-				responseArea.setText("Status " + result.statusCode() + "\n\n" + formattedBody);
+				statusLabel.setText("Response code: " + result.statusCode());
+				responseArea.setText(formattedBody);
+				responseHeaders.setText(TextBeautifierService.beautyString(result.headers()));
 
 				try {
 					jsExecutorService
@@ -277,42 +361,6 @@ public class MainController {
 	}
 
 	@FXML
-	public void createNewRequestOrFolder(
-		ActionEvent event
-	) {
-		TextInputDialog dialog = new TextInputDialog("New Request");
-		dialog.setTitle("Create Request");
-		dialog.setHeaderText("Create new HTTP Request");
-		dialog.setContentText("Enter request name:");
-
-		dialog.showAndWait().ifPresent(name -> {
-			if (!name.isBlank()) {
-
-				RequestDefinition request = new RequestDefinition(
-					name,
-					"GET",
-					"",
-					new HashMap<>(),
-					"",
-					""
-				);
-
-				CollectionNode newRequestNode = new CollectionNode(name, false, null, request);
-
-				persistenceService.getRootNode().addChild(newRequestNode);
-
-				TreeItem<CollectionNode> newNode = new TreeItem<>(newRequestNode);
-				collectionTree.getRoot().getChildren().add(newNode);
-
-				persistenceService.save();
-
-				collectionTree.getSelectionModel().select(newNode);
-				loadRequest(request);
-			}
-		});
-	}
-
-	@FXML
 	public void addHeader() {
 		String key = headerKeyField.getText();
 		String value = headerValueField.getText();
@@ -355,6 +403,7 @@ public class MainController {
 
 	public void clearLogs() {
 		logsArea.clear();
+		DependenciesContainer.logger().clearLogs();
 	}
 
 	public void onTitleBarMousePressed(MouseEvent event) {
@@ -387,7 +436,6 @@ public class MainController {
 
 	@FXML
 	public void uploadLogs(Event event) {
-		System.err.println("Logs apploading called: " + DependenciesContainer.logger().getLogs());
 		Tab tab = (Tab) event.getSource();
 		if (tab.isSelected()) {
 			Platform.runLater(() -> logsArea.setLogs());
