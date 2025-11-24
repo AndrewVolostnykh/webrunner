@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.collections;
+package andrew_volostnykh.webrunner.service.persistence;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +13,7 @@ import java.util.List;
 public class CollectionNode {
 	private String name;
 	private boolean isFolder;
+	// isChain
 	private List<CollectionNode> children = new ArrayList<>();
 	private RequestDefinition request;
 

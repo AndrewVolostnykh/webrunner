@@ -2,6 +2,7 @@ package andrew_volostnykh.webrunner.service.js;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 
 import java.time.Instant;
@@ -13,11 +14,30 @@ class PredefinedFunctions {
 		context.getBindings("js").putMember("log", (ProxyExecutable) args -> {
 			if (args.length > 0) {
 				StringBuilder logBuilder = new StringBuilder();
-				for (int i = 0; i < args.length; i++) {
-					logBuilder.append(args[i]);
-					logBuilder.append(", ");
+				for (Value arg : args) {
+					try {
+						if (arg.isString()) {
+							logBuilder.append(arg.asString());
+						} else if (arg.isNull()) {
+							logBuilder.append("null");
+						} else if (arg.isBoolean()) {
+							logBuilder.append(arg.asBoolean());
+						} else if (arg.fitsInInt()) {
+							logBuilder.append(arg.asInt());
+						} else if (arg.fitsInLong()) {
+							logBuilder.append(arg.asLong());
+						} else {
+							logBuilder.append(
+								DependenciesContainer.getObjectMapper()
+									.writeValueAsString(arg.as(Object.class))
+							);
+						}
+					} catch (Exception ex) {
+						logBuilder.append("[[unconvertable:" + arg.toString() + "]]");
+					}
+					logBuilder.append(" ");
 				}
-
+				logBuilder.append("\n");
 				DependenciesContainer.logger().logMessage(logBuilder.toString());
 			}
 			return null;

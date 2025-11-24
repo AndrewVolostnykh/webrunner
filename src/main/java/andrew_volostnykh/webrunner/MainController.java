@@ -1,54 +1,44 @@
 package andrew_volostnykh.webrunner;
 
-import andrew_volostnykh.webrunner.collections.CollectionNode;
-import andrew_volostnykh.webrunner.collections.RequestDefinition;
-import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
-import andrew_volostnykh.webrunner.grphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.grphics.components.LogArea;
 import andrew_volostnykh.webrunner.grphics.components.js_editor.JsCodeEditor;
+import andrew_volostnykh.webrunner.grphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.service.TextBeautifierService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
+import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
+import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistanceService;
+import andrew_volostnykh.webrunner.service.persistence.NavigationTreeService;
+import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MainController {
-
-	private final FontIcon folderIcon = new FontIcon("mdi-folder:16");
-	private final FontIcon requestIcon  = new FontIcon("mdi-web");
 
 	private double xOffset = 0;
 	private double yOffset = 0;
@@ -93,10 +83,9 @@ public class MainController {
 	private ChangeListener<String> methodListener, urlListener, bodyListener;
 	private ListChangeListener<Map.Entry<String, String>> headersListener;
 
-	// FIXME: move to DependenciesContainer
-	private final CollectionPersistenceService persistenceService = new CollectionPersistenceService();
-	// FIXME: move to DependenciesContainer
-	private final HttpRequestService httpService = new HttpRequestService();
+	private final NavigationTreePersistanceService persistenceService =
+		DependenciesContainer.collectionPersistenceService();
+	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();
 	private final JsExecutorService jsExecutorService = DependenciesContainer.jsExecutorService();
 	private final VarsApplicator varsApplicator = DependenciesContainer.varsApplicator();
 
@@ -109,7 +98,6 @@ public class MainController {
 		afterResponseCodeArea.attachTo(afterResponseContainer);
 
 		bodyArea = new JsonCodeArea();
-
 		bodyContainer.getChildren().add(bodyArea);
 
 		Button beautifyBtn = new Button("Beautify JSON");
@@ -119,124 +107,19 @@ public class MainController {
 		methodCombo.setItems(FXCollections.observableArrayList("GET", "POST", "PUT", "DELETE"));
 		methodCombo.getSelectionModel().select("GET");
 
-		// TODO: incapsulate tree functionality
-		CollectionNode saved = persistenceService.load();
-		TreeItem<CollectionNode> rootItem;
-
-		if (saved != null) {
-			rootItem = buildTreeItem(saved);
-			rootItem.setExpanded(true);
-			persistenceService.setRootNode(saved);
-		} else {
-			CollectionNode rootNode = new CollectionNode("Requests", true, null, null);
-			rootItem = new TreeItem<>(rootNode);
-			rootItem.setExpanded(true);
-			persistenceService.setRootNode(rootNode);
-		}
+		TreeItem<CollectionNode> rootItem = NavigationTreeService.initRootItem();
 
 		collectionTree.setRoot(rootItem);
 		collectionTree.setShowRoot(true);
 
-		collectionTree.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal != null && !newVal.getValue().isFolder()) {
-				loadRequest(newVal.getValue().getRequest());
-			}
-		});
-
-		collectionTree.setCellFactory(treeView -> new TreeCell<>() {
-			private final FontIcon folderIcon  = new FontIcon("mdi-folder:16");
-			private final FontIcon requestIcon = new FontIcon("mdi-web:16");
-
-			private final ContextMenu folderMenu = new ContextMenu();
-			private final MenuItem addRequestItem = new MenuItem("Add Request");
-			private final MenuItem addFolderItem  = new MenuItem("Add Folder");
-			private final MenuItem deleteFolderItem = new MenuItem("Delete Folder");
-
-			private final ContextMenu requestMenu = new ContextMenu();
-			private final MenuItem deleteRequestItem = new MenuItem("Delete Request");
-
-			{
-				// 📎 Папка
-				addRequestItem.setOnAction(e -> createRequestInsideNode(getItem(), getTreeItem()));
-				addFolderItem.setOnAction(e -> createFolderInsideNode(getItem(), getTreeItem()));
-				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
-				folderMenu.getItems().addAll(addRequestItem, addFolderItem, deleteFolderItem);
-
-				// 🧾 Запит
-				deleteRequestItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
-				requestMenu.getItems().add(deleteRequestItem);
-			}
-
-			@Override
-			protected void updateItem(CollectionNode item, boolean empty) {
-				super.updateItem(item, empty);
-
-				if (empty || item == null) {
-					setText(null);
-					setGraphic(null);
-					setContextMenu(null);
-				} else {
-					setText(item.getName());
-					setGraphic(item.isFolder() ? folderIcon : requestIcon);
-
-					setContextMenu(item.isFolder() ? folderMenu : requestMenu);
-				}
-			}
-		});
-	}
-
-	private void deleteNode(CollectionNode node, TreeItem<CollectionNode> treeItem) {
-		TreeItem<CollectionNode> parent = treeItem.getParent();
-		if (parent != null) {
-			parent.getChildren().remove(treeItem);
-			parent.getValue().getChildren().remove(node);
-			persistenceService.save();
-		}
-	}
-
-	private void createFolderInsideNode(CollectionNode folderNode, TreeItem<CollectionNode> folderItem) {
-		TextInputDialog dialog = new TextInputDialog("New Folder");
-		dialog.setTitle("Create Folder");
-		dialog.setHeaderText("Enter folder name:");
-		dialog.showAndWait().ifPresent(name -> {
-			if (!name.isBlank()) {
-				CollectionNode newFolder = new CollectionNode(name, true, new ArrayList<>(), null);
-				folderNode.addChild(newFolder);
-
-				TreeItem<CollectionNode> newItem = new TreeItem<>(newFolder);
-				folderItem.getChildren().add(newItem);
-
-				persistenceService.save();
-			}
-		});
-	}
-
-	private void createRequestInsideNode(CollectionNode folderNode, TreeItem<CollectionNode> folderItem) {
-		TextInputDialog dialog = new TextInputDialog("New Request");
-		dialog.setTitle("Create Request");
-		dialog.setHeaderText("Create new HTTP Request");
-		dialog.setContentText("Enter request name:");
-
-		dialog.showAndWait().ifPresent(name -> {
-			if (!name.isBlank()) {
-				RequestDefinition request = new RequestDefinition(name, "GET", "", new HashMap<>(), "", "");
-
-				CollectionNode newNode = new CollectionNode(
-					name,
-					false,
-					null,
-					request
-				);
-
-				folderNode.addChild(newNode);
-				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);
-				folderItem.getChildren().add(newItem);
-
-				persistenceService.save();
-				collectionTree.getSelectionModel().select(newItem);
-				loadRequest(request);
-			}
-		});
+		NavigationTreeService.addContextMenus(
+			collectionTree,
+			this::loadRequest
+		);
+		NavigationTreeService.addListenerOnCreate(
+			collectionTree,
+			this::loadRequest
+		);
 	}
 
 	@FXML
@@ -294,10 +177,12 @@ public class MainController {
 
 				try {
 					jsExecutorService
-						.handleAfterResponse(
+						.executeJsAfterRequest(
 							afterResponseCodeArea.getText(),
+							vars.get(),
 							result.body(),
-							vars.get()
+							result.headers(),
+							result.statusCode()
 						);
 				} catch (Exception e) {
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
@@ -391,14 +276,6 @@ public class MainController {
 		row.getChildren().addAll(label, removeBtn);
 		row.getStyleClass().add("headers-row");
 		headersList.getChildren().add(row);
-	}
-
-	private TreeItem<CollectionNode> buildTreeItem(CollectionNode node) {
-		TreeItem<CollectionNode> item = new TreeItem<>(node);
-		if (node.getChildren() != null) {
-			node.getChildren().forEach(child -> item.getChildren().add(buildTreeItem(child)));
-		}
-		return item;
 	}
 
 	public void clearLogs() {

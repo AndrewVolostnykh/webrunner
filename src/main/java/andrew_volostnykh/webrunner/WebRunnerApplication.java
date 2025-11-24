@@ -1,6 +1,5 @@
 package andrew_volostnykh.webrunner;
 
-import andrew_volostnykh.webrunner.collections.persistence.CollectionPersistenceService;
 import andrew_volostnykh.webrunner.grphics.WindowResizer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

@@ -22,7 +22,7 @@ public class TextBeautifierService {
 	public static String beautyString(Map<String, List<String>> body) {
 		return body.entrySet().stream()
 			.sorted(Map.Entry.comparingByKey())
-			.map(e -> "%s: %s".formatted(e.getKey(), String.join(", ", e.getValue())))
+			.map(e -> "%s: %s".formatted(e.getKey(), String.join(" ", e.getValue())))
 			.collect(Collectors.joining(System.lineSeparator()));
 	}
 }
