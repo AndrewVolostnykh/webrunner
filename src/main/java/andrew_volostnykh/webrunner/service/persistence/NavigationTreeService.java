@@ -1,9 +1,9 @@
 package andrew_volostnykh.webrunner.service.persistence;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
+import andrew_volostnykh.webrunner.graphics.components.CreateTreeElementDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -55,26 +55,33 @@ public class NavigationTreeService {
 			private final FontIcon requestIcon = new FontIcon("mdi-web:16");
 
 			private final ContextMenu folderMenu = new ContextMenu();
-			private final MenuItem addRequestItem = new MenuItem("Add Request");
 			private final MenuItem addFolderItem = new MenuItem("Add Folder");
+			private final MenuItem addHttpItem = new MenuItem("Add Http Request");
+			private final MenuItem addGrpcItem = new MenuItem("Add GRPC Request");
 			private final MenuItem deleteFolderItem = new MenuItem("Delete Folder");
 
 			private final ContextMenu requestMenu = new ContextMenu();
 			private final MenuItem deleteRequestItem = new MenuItem("Delete Request");
 
 			{
-				addRequestItem.setOnAction(e -> createRequestInsideNode(
+				addFolderItem.setOnAction(e -> createFolderInsideNode(
+					getItem(),
+					getTreeItem()
+				));
+				addHttpItem.setOnAction(e -> createHttpRequestInsideNode(
 					getItem(),
 					getTreeItem(),
 					collectionTree,
 					loadRequest
 				));
-				addFolderItem.setOnAction(e -> createFolderInsideNode(
+				addGrpcItem.setOnAction(e -> createGrpcRequestInsideNode(
 					getItem(),
-					getTreeItem()
+					getTreeItem(),
+					collectionTree,
+					loadRequest
 				));
 				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
-				folderMenu.getItems().addAll(addRequestItem, addFolderItem, deleteFolderItem);
+				folderMenu.getItems().addAll(addFolderItem, addHttpItem, addGrpcItem, deleteFolderItem);
 
 				deleteRequestItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
 				requestMenu.getItems().add(deleteRequestItem);
@@ -117,10 +124,9 @@ public class NavigationTreeService {
 		CollectionNode folderNode,
 		TreeItem<CollectionNode> folderItem
 	) {
-		TextInputDialog dialog = new TextInputDialog("New Folder");
-		dialog.setTitle("Create Folder");
-		dialog.setHeaderText("Enter folder name:");
-		dialog.showAndWait().ifPresent(name -> {
+		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
+
+		dialog.show("New Folder").ifPresent(name -> {
 			if (!name.isBlank()) {
 				CollectionNode newFolder = new CollectionNode(name, true, new ArrayList<>(), null);
 				folderNode.addChild(newFolder);
@@ -133,18 +139,56 @@ public class NavigationTreeService {
 		});
 	}
 
-	private static void createRequestInsideNode(
+	private static void createGrpcRequestInsideNode(
 		CollectionNode folderNode,
 		TreeItem<CollectionNode> folderItem,
 		TreeView<CollectionNode> collectionTree,
 		Consumer<RequestDefinition> loadRequest
 	) {
-		TextInputDialog dialog = new TextInputDialog("New Request");
-		dialog.setTitle("Create Request");
-		dialog.setHeaderText("Create new HTTP Request");
-		dialog.setContentText("Enter request name:");
+		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
 
-		dialog.showAndWait().ifPresent(name -> {
+		dialog.show("New GRPC Request").ifPresent(name -> {
+			if (!name.isBlank()) {
+				// TODO: add hints
+				RequestDefinition request = new RequestDefinition(
+					UUID.randomUUID().toString(),
+					name,
+					"GET",
+					"",
+					new HashMap<>(),
+					"",
+					"",
+					"",
+					RequestType.GRPC_REQUEST
+				);
+
+				CollectionNode newNode = new CollectionNode(
+					name,
+					false,
+					null,
+					request
+				);
+
+				folderNode.addChild(newNode);
+				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);
+				folderItem.getChildren().add(newItem);
+
+				NAVIGATION_TREE_PERSISTENCE_SERVICE.save();
+				collectionTree.getSelectionModel().select(newItem);
+				loadRequest.accept(request);
+			}
+		});
+	}
+
+	private static void createHttpRequestInsideNode(
+		CollectionNode folderNode,
+		TreeItem<CollectionNode> folderItem,
+		TreeView<CollectionNode> collectionTree,
+		Consumer<RequestDefinition> loadRequest
+	) {
+		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
+
+		dialog.show("New HTTP Request").ifPresent(name -> {
 			if (!name.isBlank()) {
 				// TODO: add hints
 				RequestDefinition request = new RequestDefinition(

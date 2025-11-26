@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import andrew_volostnykh.webrunner.graphics.components.LogArea?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<!--fx:controller="andrew_volostnykh.webrunner.graphics.controller.GrpcRequestUIController"-->
+<VBox xmlns:fx="http://javafx.com/fxml"
+
+      spacing="10" VBox.vgrow="ALWAYS">
+
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+
+        <GridPane hgap="10" vgap="5">
+            <columnConstraints>
+                <ColumnConstraints minWidth="120"/>         <!-- Host -->
+                <ColumnConstraints minWidth="120"/>         <!-- Service -->
+                <ColumnConstraints hgrow="ALWAYS"/>         <!-- Method -->
+                <ColumnConstraints minWidth="40"/>          <!-- Send -->
+                <ColumnConstraints minWidth="40"/>          <!-- Cancel -->
+            </columnConstraints>
+
+            <TextField fx:id="hostField" promptText="localhost:50051" GridPane.columnIndex="0"/>
+
+            <ComboBox fx:id="serviceCombo" promptText="Select Service" GridPane.columnIndex="1"/>
+
+            <ComboBox fx:id="methodCombo" promptText="Select Method" GridPane.columnIndex="2"/>
+
+            <Button fx:id="sendButton" onAction="#sendRequest" GridPane.columnIndex="3"
+                    styleClass="request-button">
+                <graphic>
+                    <FontIcon iconLiteral="mdi-send:20"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="cancelButton" onAction="#cancelRequest" GridPane.columnIndex="4"
+                    styleClass="request-button">
+                <graphic>
+                    <FontIcon iconLiteral="fa-ban:20"/>
+                </graphic>
+            </Button>
+
+        </GridPane>
+
+        <SplitPane orientation="VERTICAL" dividerPositions="0.55" VBox.vgrow="ALWAYS">
+
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+                <TabPane VBox.vgrow="ALWAYS">
+
+                    <Tab text="Body">
+                        <VBox spacing="5" VBox.vgrow="ALWAYS">
+                            <VBox fx:id="bodyContainer" VBox.vgrow="ALWAYS"/>
+                        </VBox>
+                    </Tab>
+
+                    <Tab text="Testing">
+                        <TabPane>
+                            <Tab text="Before Request">
+                                <VBox fx:id="beforeRequestContainer" VBox.vgrow="ALWAYS"/>
+                            </Tab>
+                            <Tab text="On Response">
+                                <VBox fx:id="afterResponseContainer" VBox.vgrow="ALWAYS"/>
+                            </Tab>
+                        </TabPane>
+                    </Tab>
+
+                </TabPane>
+            </VBox>
+
+            <VBox spacing="5" VBox.vgrow="ALWAYS" SplitPane.resizableWithParent="true">
+                <Label fx:id="statusLabel"/>
+
+                <TabPane VBox.vgrow="ALWAYS">
+                    <Tab text="Result">
+                        <AnchorPane>
+                            <TextArea fx:id="responseArea"
+                                      editable="false"
+                                      AnchorPane.topAnchor="0"
+                                      AnchorPane.bottomAnchor="0"
+                                      AnchorPane.leftAnchor="0"
+                                      AnchorPane.rightAnchor="0"/>
+                        </AnchorPane>
+                    </Tab>
+
+                    <Tab text="Logs" onSelectionChanged="#uploadLogs">
+                        <VBox spacing="5">
+                            <LogArea fx:id="logsArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                            <Button text="Clear logs" onAction="#clearLogs"/>
+                        </VBox>
+                    </Tab>
+                </TabPane>
+            </VBox>
+
+        </SplitPane>
+    </VBox>
+</VBox>

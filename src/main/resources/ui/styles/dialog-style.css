@@ -1,0 +1,23 @@
+.custom-dialog {
+    -fx-background-color: #2d2d2d;
+}
+
+.custom-dialog .label {
+    -fx-text-fill: white;
+}
+
+.custom-dialog .text-field {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+    -fx-padding: 4px;
+}
+
+.custom-dialog .button {
+    -fx-background-color: #444;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.custom-dialog .button:hover {
+    -fx-background-color: #555;
+}

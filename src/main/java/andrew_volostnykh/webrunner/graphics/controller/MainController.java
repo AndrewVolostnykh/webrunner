@@ -55,9 +55,16 @@ public class MainController {
 		activeEditor = RequestUIFactory.create(req);
 
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/http_request_editor.fxml"));
+			FXMLLoader loader = new FXMLLoader(
+				getClass().getResource(
+					activeEditor.fxmlTemplatePath()
+				)
+			);
 			loader.setController(activeEditor);
-			mainEditorContainer.getChildren().add(loader.load());
+			mainEditorContainer.getChildren()
+				.add(
+					loader.load()
+				);
 		} catch (Exception e) {
 			// TODO: custom exception
 			throw new RuntimeException("Failed to load UI", e);

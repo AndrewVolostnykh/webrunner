@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor
-public class HttpRequestController implements RequestEditorUI {
+public class HttpRequestUIController implements RequestEditorUI {
 
 	@FXML
 	private ComboBox<String> methodCombo;
@@ -341,4 +341,8 @@ public class HttpRequestController implements RequestEditorUI {
 		headersList.getChildren().add(row);
 	}
 
+	@Override
+	public String fxmlTemplatePath() {
+		return "/ui/http_request_editor.fxml";
+	}
 }

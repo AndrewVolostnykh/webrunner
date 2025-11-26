@@ -1,6 +1,7 @@
 package andrew_volostnykh.webrunner.graphics;
 
-import andrew_volostnykh.webrunner.graphics.controller.HttpRequestController;
+import andrew_volostnykh.webrunner.graphics.controller.GrpcRequestUIController;
+import andrew_volostnykh.webrunner.graphics.controller.HttpRequestUIController;
 import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 
 public class RequestUIFactory {
@@ -9,11 +10,10 @@ public class RequestUIFactory {
 		RequestDefinition requestDefinition
 	) {
 		return switch (requestDefinition.getType()) {
-			case HTTP_REQUEST -> new HttpRequestController();
-//			case GRPC_REQUEST -> new GrpcRequestEditorUI();
+			case HTTP_REQUEST -> new HttpRequestUIController();
+			case GRPC_REQUEST -> new GrpcRequestUIController();
 //			case CHAIN -> new ChainRequestEditorUI();
-			default ->
-				throw new UnsupportedOperationException("Unknown request type");
+			default -> throw new UnsupportedOperationException("Unknown request type");
 		};
 	}
 

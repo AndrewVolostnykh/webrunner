@@ -9,4 +9,6 @@ public interface RequestEditorUI {
 	void saveChanges();
 	void sendRequest();
 	void cancelRequest();
+
+	String fxmlTemplatePath();
 }
