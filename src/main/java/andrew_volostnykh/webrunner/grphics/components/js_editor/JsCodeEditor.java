@@ -57,16 +57,17 @@ public class JsCodeEditor
 
 	private void handleShortcuts(KeyEvent event) {
 		if (event.getCode() == KeyCode.L && event.isControlDown() && event.isAltDown()) {
-			formatAsJson();
+			replaceText(
+				Formatter.beautifyJs(getText())
+			);
 			event.consume();
 		}
 	}
 
-	public void formatAsJson() {
-		try {
-			String formatted = Formatter.formatJson(getText());
-			replaceText(formatted);
-		} catch (Exception ignore) {}
+	@Override
+	protected void layoutChildren() {
+		super.layoutChildren();
+		this.setStyleSpans(0, SyntaxHighlighter.computeHighlighting(getText()));
 	}
 
 	// TODO: maybe attach it directly in MainController?

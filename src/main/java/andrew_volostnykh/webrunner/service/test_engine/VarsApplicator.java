@@ -20,7 +20,10 @@ public class VarsApplicator extends AbstractService {
 				if (v.getValue() instanceof String ||
 					v.getValue() instanceof Number ||
 					v.getValue() instanceof Boolean) {
-					result = result.replace(placeholder, String.valueOf(v.getValue()));
+					result = result.replace(
+						placeholder,
+						"\"" + v.getValue() + "\""
+					);
 				} else {
 					String jsonValue = DependenciesContainer.getObjectMapper().writeValueAsString(v.getValue());
 					result = result.replace(placeholder, jsonValue);

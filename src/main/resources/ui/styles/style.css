@@ -1,11 +1,9 @@
-/* Консольний стилі для response і body */
 .text-area, #responseArea, LogArea {
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
     -fx-font-size: 13px;
     -fx-padding: 8px;
 }
 
-/* Send button позбавлений "квадратності" */
 #sendButton {
     -fx-padding: 6px 10px;
 }
@@ -13,15 +11,13 @@
     -fx-icon-color: white;
 }
 
-/* Роздільник SplitPane трішки тонший */
 .split-pane > .split-pane-divider {
     -fx-padding: 1px;
 }
 
-/* Стиль headers rows (опційно) */
 .headers-row {
-    -fx-background-color: -color-bg-default;
-    -fx-border-color: derive(-color-bg-default, -10%);
+    -fx-background-color: derive(#2a2a2a, -10%);
+    -fx-border-color: derive(#2a2a2a, -10%);
     -fx-padding: 6px;
 }
 
@@ -39,4 +35,27 @@
 .window-close-button:hover {
     -fx-background-color: #c42b1c;
     -fx-text-fill: white;
+}
+
+.icon-button .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+.request-button {
+    -fx-background-color: #333333;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 3;
+    -fx-cursor: hand;
+}
+
+.request-button FontIcon {
+    -fx-icon-color: white;
+}
+
+.request-button:hover {
+    -fx-background-color: #3d3d3d;
+}
+
+.request-button:pressed {
+    -fx-background-color: #2a2a2a;
 }

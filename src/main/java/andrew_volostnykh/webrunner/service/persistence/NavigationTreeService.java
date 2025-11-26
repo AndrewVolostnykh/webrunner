@@ -11,27 +11,28 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class NavigationTreeService {
 
 	// should it be really static?
-	public static final NavigationTreePersistanceService NAVIGATION_TREE_PERSISTANCE_SERVICE =
+	public static final NavigationTreePersistenceService NAVIGATION_TREE_PERSISTENCE_SERVICE =
 		DependenciesContainer.collectionPersistenceService();
 
 	public static TreeItem<CollectionNode> initRootItem() {
-		CollectionNode saved = NAVIGATION_TREE_PERSISTANCE_SERVICE.load();
+		CollectionNode saved = NAVIGATION_TREE_PERSISTENCE_SERVICE.load();
 		TreeItem<CollectionNode> rootItem;
 
 		if (saved != null) {
 			rootItem = buildTreeItem(saved);
 			rootItem.setExpanded(true);
-			NAVIGATION_TREE_PERSISTANCE_SERVICE.setRootNode(saved);
+			NAVIGATION_TREE_PERSISTENCE_SERVICE.setRootNode(saved);
 		} else {
 			CollectionNode rootNode = new CollectionNode("Requests", true, null, null);
 			rootItem = new TreeItem<>(rootNode);
 			rootItem.setExpanded(true);
-			NAVIGATION_TREE_PERSISTANCE_SERVICE.setRootNode(rootNode);
+			NAVIGATION_TREE_PERSISTENCE_SERVICE.setRootNode(rootNode);
 		}
 
 		return rootItem;
@@ -62,7 +63,6 @@ public class NavigationTreeService {
 			private final MenuItem deleteRequestItem = new MenuItem("Delete Request");
 
 			{
-				// 📎 Папка
 				addRequestItem.setOnAction(e -> createRequestInsideNode(
 					getItem(),
 					getTreeItem(),
@@ -76,7 +76,6 @@ public class NavigationTreeService {
 				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
 				folderMenu.getItems().addAll(addRequestItem, addFolderItem, deleteFolderItem);
 
-				// 🧾 Запит
 				deleteRequestItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
 				requestMenu.getItems().add(deleteRequestItem);
 			}
@@ -110,7 +109,7 @@ public class NavigationTreeService {
 		if (parent != null) {
 			parent.getChildren().remove(treeItem);
 			parent.getValue().getChildren().remove(node);
-			NAVIGATION_TREE_PERSISTANCE_SERVICE.save();
+			NAVIGATION_TREE_PERSISTENCE_SERVICE.save();
 		}
 	}
 
@@ -129,7 +128,7 @@ public class NavigationTreeService {
 				TreeItem<CollectionNode> newItem = new TreeItem<>(newFolder);
 				folderItem.getChildren().add(newItem);
 
-				NAVIGATION_TREE_PERSISTANCE_SERVICE.save();
+				NAVIGATION_TREE_PERSISTENCE_SERVICE.save();
 			}
 		});
 	}
@@ -147,11 +146,14 @@ public class NavigationTreeService {
 
 		dialog.showAndWait().ifPresent(name -> {
 			if (!name.isBlank()) {
+				// TODO: add hints
 				RequestDefinition request = new RequestDefinition(
+					UUID.randomUUID().toString(),
 					name,
 					"GET",
 					"",
 					new HashMap<>(),
+					"",
 					"",
 					"",
 					RequestType.HTTP_REQUEST
@@ -164,11 +166,13 @@ public class NavigationTreeService {
 					request
 				);
 
+				System.err.println("FOLDER: " + folderNode.getRequest());
+
 				folderNode.addChild(newNode);
 				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);
 				folderItem.getChildren().add(newItem);
 
-				NAVIGATION_TREE_PERSISTANCE_SERVICE.save();
+				NAVIGATION_TREE_PERSISTENCE_SERVICE.save();
 				collectionTree.getSelectionModel().select(newItem);
 				loadRequest.accept(request);
 			}
@@ -179,10 +183,12 @@ public class NavigationTreeService {
 		TreeView<CollectionNode> collectionTree,
 		Consumer<RequestDefinition> loadRequest
 	) {
-		collectionTree.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal != null && !newVal.getValue().isFolder()) {
-				loadRequest.accept(newVal.getValue().getRequest());
-			}
-		});
+		collectionTree.getSelectionModel()
+			.selectedItemProperty()
+			.addListener((obs, oldVal, newVal) -> {
+				if (newVal != null && !newVal.getValue().isFolder()) {
+					loadRequest.accept(newVal.getValue().getRequest());
+				}
+			});
 	}
 }

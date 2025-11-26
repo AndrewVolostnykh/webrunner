@@ -7,7 +7,7 @@ import andrew_volostnykh.webrunner.service.TextBeautifierService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
-import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistanceService;
+import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreeService;
 import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
@@ -52,7 +52,7 @@ public class MainController {
 	private JsonCodeArea bodyArea;
 
 	@FXML
-	private VBox varsContainer;
+	private VBox beforeRequestContainer;
 	private JsCodeEditor beforeRequestCodeArea;
 
 	@FXML
@@ -80,10 +80,16 @@ public class MainController {
 	@FXML
 	private TreeView<CollectionNode> collectionTree;
 
-	private ChangeListener<String> methodListener, urlListener, bodyListener;
+	private ChangeListener<String> methodListener,
+		urlListener,
+		bodyListener,
+		beforeRequestAreaListener,
+		afterResponseAreaListener;
 	private ListChangeListener<Map.Entry<String, String>> headersListener;
 
-	private final NavigationTreePersistanceService persistenceService =
+	private CompletableFuture<?> requestRunner;
+
+	private final NavigationTreePersistenceService persistenceService =
 		DependenciesContainer.collectionPersistenceService();
 	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();
 	private final JsExecutorService jsExecutorService = DependenciesContainer.jsExecutorService();
@@ -92,7 +98,7 @@ public class MainController {
 	@FXML
 	public void initialize() {
 		beforeRequestCodeArea = new JsCodeEditor();
-		beforeRequestCodeArea.attachTo(varsContainer);
+		beforeRequestCodeArea.attachTo(beforeRequestContainer);
 
 		afterResponseCodeArea = new JsCodeEditor();
 		afterResponseCodeArea.attachTo(afterResponseContainer);
@@ -124,13 +130,23 @@ public class MainController {
 
 	@FXML
 	public void sendRequest() {
+		if (requestRunner != null && !requestRunner.isDone()) {
+			statusLabel.setText("Another request running...");
+			return;
+		}
+
 		statusLabel.setText("Sending...");
 		responseArea.setText("");
 
 		AtomicReference<Map<String, Object>> vars = new AtomicReference<>();
 
-		CompletableFuture
+		requestRunner = CompletableFuture
 			.supplyAsync(() -> {
+				if (Thread.currentThread().isInterrupted()) {
+					// TODO: need custom exception
+					throw new RuntimeException("Cancelled");
+				}
+
 				Map<String, String> headersMap = new HashMap<>();
 				headers.forEach(entry -> headersMap.put(entry.getKey(), entry.getValue()));
 
@@ -191,6 +207,7 @@ public class MainController {
 	}
 
 	private void loadRequest(RequestDefinition req) {
+
 		if (methodListener != null) {
 			methodCombo.valueProperty().removeListener(methodListener);
 		}
@@ -202,6 +219,14 @@ public class MainController {
 		}
 		if (headersListener != null) {
 			headers.removeListener(headersListener);
+		}
+		if (beforeRequestAreaListener != null) {
+			beforeRequestCodeArea.textProperty()
+				.removeListener(beforeRequestAreaListener);
+		}
+		if (afterResponseAreaListener != null) {
+			afterResponseCodeArea.textProperty()
+				.removeListener(afterResponseAreaListener);
 		}
 
 		methodCombo.setValue(req.getMethod());
@@ -238,11 +263,20 @@ public class MainController {
 			persistenceService.save();
 		};
 		headers.addListener(headersListener);
+
 		beforeRequestCodeArea.replaceText(req.getVarsDefinition());
-		beforeRequestCodeArea.textProperty().addListener((obs, old, val) -> {
+		beforeRequestAreaListener = (obs, old, val) -> {
 			req.setVarsDefinition(val);
 			persistenceService.save();
-		});
+		};
+		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
+
+		afterResponseCodeArea.replaceText(req.getOnResponse());
+		afterResponseAreaListener = (obs, old, val) -> {
+			req.setOnResponse(val);
+			persistenceService.save();
+		};
+		afterResponseCodeArea.textProperty().addListener(afterResponseAreaListener);
 	}
 
 	@FXML
@@ -310,6 +344,23 @@ public class MainController {
 	private Stage getStage() {
 		return (Stage) methodCombo.getScene().getWindow();
 	}
+
+	@FXML
+	public void cancelRequest() {
+		if (requestRunner != null && !requestRunner.isDone()) {
+			requestRunner.cancel(true);
+			Platform.runLater(() -> {
+				statusLabel.setText("Canceled");
+				responseArea.setText("Canceled");
+			});
+			DependenciesContainer.logger().logMessage("Request cancelled\n");
+		}
+	}
+
+	// TODO: add beautify js button
+//	Button beautifyJsBtn = new Button("Beautify JS");
+//beautifyJsBtn.setOnAction(e -> beforeRequestCodeArea.beautifyCode());
+//varsContainer.getChildren().add(beautifyJsBtn);
 
 	@FXML
 	public void uploadLogs(Event event) {

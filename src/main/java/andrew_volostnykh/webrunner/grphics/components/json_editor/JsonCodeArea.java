@@ -62,11 +62,18 @@ public class JsonCodeArea
 		});
 	}
 
+	@Override
+	protected void layoutChildren() {
+		super.layoutChildren();
+		this.setStyleSpans(0, SyntaxHighlighter.computeHighlighting(getText()));
+	}
+
 	public void beautifyBody() {
 		try {
-			String pretty = TextBeautifierService.formatJson(this.getText());
+			String pretty = TextBeautifierService.formatJsonWithPlaceholders(this.getText());
 			this.replaceText(pretty);
-		} catch (Exception e) {
+			this.setStyleSpans(0, SyntaxHighlighter.computeHighlighting(pretty));
+		} catch (Exception ignored) {
 		}
 	}
 }

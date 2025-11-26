@@ -3,7 +3,7 @@ package andrew_volostnykh.webrunner;
 import andrew_volostnykh.webrunner.service.Logger;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
-import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistanceService;
+import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,10 +19,10 @@ public class DependenciesContainer {
 		);
 
 	private static final Logger logger = new Logger();
-	private static final NavigationTreePersistanceService
-		NAVIGATION_TREE_PERSISTANCE_SERVICE = new NavigationTreePersistanceService();
+	private static final NavigationTreePersistenceService
+		NAVIGATION_TREE_PERSISTANCE_SERVICE = new NavigationTreePersistenceService();
 
-	public static NavigationTreePersistanceService collectionPersistenceService() {
+	public static NavigationTreePersistenceService collectionPersistenceService() {
 		return NAVIGATION_TREE_PERSISTANCE_SERVICE;
 	}
 

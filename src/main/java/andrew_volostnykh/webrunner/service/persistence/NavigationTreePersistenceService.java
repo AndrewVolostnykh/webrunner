@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class NavigationTreePersistanceService {
+public class NavigationTreePersistenceService {
 
 	private static final Path STATE_FILE = Path.of("collections.json");
 
@@ -18,7 +18,6 @@ public class NavigationTreePersistanceService {
 		try {
 			if (rootNode != null) {
 				DependenciesContainer.getObjectMapper().writeValue(STATE_FILE.toFile(), rootNode);
-				System.out.println("Collections saved");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -28,12 +27,30 @@ public class NavigationTreePersistanceService {
 	public CollectionNode load() {
 		try {
 			if (Files.exists(STATE_FILE)) {
-				System.out.println("Collections loaded");
-				return DependenciesContainer.getObjectMapper().readValue(STATE_FILE.toFile(), CollectionNode.class);
+				try {
+					if (Files.exists(STATE_FILE)) {
+						CollectionNode node = DependenciesContainer.getObjectMapper()
+							.readValue(
+								STATE_FILE.toFile(),
+								CollectionNode.class
+							);
+						normalizeTree(node);
+						return node;
+					}
+				} catch (Exception ignored) {}
 			}
 		} catch (Exception e) {
 			System.err.println("Warning: collections storage file does not exist");
 		}
 		return null;
+	}
+
+	private void normalizeTree(CollectionNode node) {
+		if (node.getRequest() != null) {
+			node.setRequest(node.getRequest().deepCopy());
+		}
+		if (node.getChildren() != null) {
+			node.getChildren().forEach(this::normalizeTree);
+		}
 	}
 }
