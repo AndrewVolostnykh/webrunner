@@ -1,6 +1,6 @@
 package andrew_volostnykh.webrunner;
 
-import andrew_volostnykh.webrunner.grphics.WindowResizer;
+import andrew_volostnykh.webrunner.graphics.WindowResizer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

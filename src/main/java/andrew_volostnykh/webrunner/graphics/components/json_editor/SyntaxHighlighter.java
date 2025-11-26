@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.grphics.components.json_editor;
+package andrew_volostnykh.webrunner.graphics.components.json_editor;
 
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;

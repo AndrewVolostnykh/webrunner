@@ -1,14 +1,14 @@
-package andrew_volostnykh.webrunner;
+package andrew_volostnykh.webrunner.graphics.controller;
 
-import andrew_volostnykh.webrunner.grphics.components.LogArea;
-import andrew_volostnykh.webrunner.grphics.components.js_editor.JsCodeEditor;
-import andrew_volostnykh.webrunner.grphics.components.json_editor.JsonCodeArea;
+import andrew_volostnykh.webrunner.DependenciesContainer;
+import andrew_volostnykh.webrunner.graphics.RequestEditorUI;
+import andrew_volostnykh.webrunner.graphics.components.LogArea;
+import andrew_volostnykh.webrunner.graphics.components.js_editor.JsCodeEditor;
+import andrew_volostnykh.webrunner.graphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.service.TextBeautifierService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
-import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
-import andrew_volostnykh.webrunner.service.persistence.NavigationTreeService;
 import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
 import javafx.application.Platform;
@@ -25,31 +25,40 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import lombok.NoArgsConstructor;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MainController {
-
-	private double xOffset = 0;
-	private double yOffset = 0;
+@NoArgsConstructor
+public class HttpRequestController implements RequestEditorUI {
 
 	@FXML
 	private ComboBox<String> methodCombo;
 	@FXML
 	private TextField urlField;
+
+	@FXML
+	private Button sendButton;
+	@FXML
+	private Button cancelButton;
+
 	@FXML
 	private VBox bodyContainer;
 	private JsonCodeArea bodyArea;
+
+	@FXML
+	private VBox headersList;
+	@FXML
+	private TextField headerKeyField;
+	@FXML
+	private TextField headerValueField;
 
 	@FXML
 	private VBox beforeRequestContainer;
@@ -60,75 +69,142 @@ public class MainController {
 	private JsCodeEditor afterResponseCodeArea;
 
 	@FXML
-	private LogArea logsArea;
-
-	@FXML
-	private TextField headerKeyField;
-	@FXML
-	private TextField headerValueField;
-	@FXML
-	private VBox headersList;
-
-	private final ObservableList<Map.Entry<String, String>> headers = FXCollections.observableArrayList();
-
-	@FXML
 	private TextArea responseArea;
 	@FXML
 	private TextArea responseHeaders;
 	@FXML
 	private Label statusLabel;
 	@FXML
-	private TreeView<CollectionNode> collectionTree;
+	private LogArea logsArea;
 
+	private final ObservableList<Entry<String, String>> headers = FXCollections.observableArrayList();
+	private ListChangeListener<Entry<String, String>> headersListener;
 	private ChangeListener<String> methodListener,
 		urlListener,
 		bodyListener,
 		beforeRequestAreaListener,
 		afterResponseAreaListener;
-	private ListChangeListener<Map.Entry<String, String>> headersListener;
 
-	private CompletableFuture<?> requestRunner;
+	private CompletableFuture<?> requestRunner; // TODO: move to request service
 
 	private final NavigationTreePersistenceService persistenceService =
 		DependenciesContainer.collectionPersistenceService();
+
+	private RequestDefinition request;
+
 	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();
 	private final JsExecutorService jsExecutorService = DependenciesContainer.jsExecutorService();
 	private final VarsApplicator varsApplicator = DependenciesContainer.varsApplicator();
 
 	@FXML
 	public void initialize() {
+		bodyArea = new JsonCodeArea();
+		bodyContainer.getChildren().add(bodyArea);
+
 		beforeRequestCodeArea = new JsCodeEditor();
 		beforeRequestCodeArea.attachTo(beforeRequestContainer);
 
 		afterResponseCodeArea = new JsCodeEditor();
 		afterResponseCodeArea.attachTo(afterResponseContainer);
 
-		bodyArea = new JsonCodeArea();
-		bodyContainer.getChildren().add(bodyArea);
+		methodCombo.setItems(FXCollections.observableArrayList("GET", "POST", "PUT", "DELETE"));
+		methodCombo.getSelectionModel().select("GET");
+		sendButton.setOnAction(e -> sendRequest());
+		cancelButton.setOnAction(e -> cancelRequest());
 
 		Button beautifyBtn = new Button("Beautify JSON");
 		beautifyBtn.setOnAction(e -> bodyArea.beautifyBody());
 		bodyContainer.getChildren().add(beautifyBtn);
-
-		methodCombo.setItems(FXCollections.observableArrayList("GET", "POST", "PUT", "DELETE"));
-		methodCombo.getSelectionModel().select("GET");
-
-		TreeItem<CollectionNode> rootItem = NavigationTreeService.initRootItem();
-
-		collectionTree.setRoot(rootItem);
-		collectionTree.setShowRoot(true);
-
-		NavigationTreeService.addContextMenus(
-			collectionTree,
-			this::loadRequest
-		);
-		NavigationTreeService.addListenerOnCreate(
-			collectionTree,
-			this::loadRequest
-		);
 	}
 
-	@FXML
+	@Override
+	public Node getRoot() {
+		return methodCombo.getScene() != null
+			? methodCombo.getScene().getRoot()
+			: null;
+	}
+
+	@Override
+	public void loadRequest(RequestDefinition req) {
+		this.request = req;
+
+		if (methodListener != null) {
+			methodCombo.valueProperty().removeListener(methodListener);
+		}
+		if (urlListener != null) {
+			urlField.textProperty().removeListener(urlListener);
+		}
+		if (bodyListener != null) {
+			bodyArea.textProperty().removeListener(bodyListener);
+		}
+		if (headersListener != null) {
+			headers.removeListener(headersListener);
+		}
+		if (beforeRequestAreaListener != null) {
+			beforeRequestCodeArea.textProperty()
+				.removeListener(beforeRequestAreaListener);
+		}
+		if (afterResponseAreaListener != null) {
+			afterResponseCodeArea.textProperty()
+				.removeListener(afterResponseAreaListener);
+		}
+
+		methodCombo.setValue(req.getMethod());
+		urlField.setText(req.getUrl());
+		bodyArea.replaceText(req.getBody());
+
+		headers.clear();
+		headersList.getChildren().clear();
+		req.getHeaders().forEach((k, v) -> {
+			var entry = new AbstractMap.SimpleEntry<>(k, v);
+			headers.add(entry);
+			addHeaderRowToUi(entry);
+		});
+
+		methodListener = (obs, old, val) -> {
+			req.setMethod(val);
+			persistenceService.save();
+		};
+		urlListener = (obs, old, val) -> {
+			req.setUrl(val);
+			persistenceService.save();
+		};
+		bodyListener = (obs, old, val) -> {
+			req.setBody(val);
+			persistenceService.save();
+		};
+		methodCombo.valueProperty().addListener(methodListener);
+		urlField.textProperty().addListener(urlListener);
+		bodyArea.textProperty().addListener(bodyListener);
+
+		headersListener = change -> {
+			req.getHeaders().clear();
+			headers.forEach(entry -> req.getHeaders().put(entry.getKey(), entry.getValue()));
+			persistenceService.save();
+		};
+		headers.addListener(headersListener);
+
+		beforeRequestCodeArea.replaceText(req.getVarsDefinition());
+		beforeRequestAreaListener = (obs, old, val) -> {
+			req.setVarsDefinition(val);
+			persistenceService.save();
+		};
+		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
+
+		afterResponseCodeArea.replaceText(req.getOnResponse());
+		afterResponseAreaListener = (obs, old, val) -> {
+			req.setOnResponse(val);
+			persistenceService.save();
+		};
+		afterResponseCodeArea.textProperty().addListener(afterResponseAreaListener);
+	}
+
+	@Override
+	public void saveChanges() {
+
+	}
+
+	@Override
 	public void sendRequest() {
 		if (requestRunner != null && !requestRunner.isDone()) {
 			statusLabel.setText("Another request running...");
@@ -206,77 +282,24 @@ public class MainController {
 			}));
 	}
 
-	private void loadRequest(RequestDefinition req) {
-
-		if (methodListener != null) {
-			methodCombo.valueProperty().removeListener(methodListener);
+	@Override
+	public void cancelRequest() {
+		if (requestRunner != null && !requestRunner.isDone()) {
+			requestRunner.cancel(true);
+			Platform.runLater(() -> {
+				statusLabel.setText("Canceled");
+				responseArea.setText("Canceled");
+			});
+			DependenciesContainer.logger().logMessage("Request cancelled\n");
 		}
-		if (urlListener != null) {
-			urlField.textProperty().removeListener(urlListener);
+	}
+
+	@FXML
+	public void uploadLogs(Event event) {
+		Tab tab = (Tab) event.getSource();
+		if (tab.isSelected()) {
+			Platform.runLater(() -> logsArea.setLogs());
 		}
-		if (bodyListener != null) {
-			bodyArea.textProperty().removeListener(bodyListener);
-		}
-		if (headersListener != null) {
-			headers.removeListener(headersListener);
-		}
-		if (beforeRequestAreaListener != null) {
-			beforeRequestCodeArea.textProperty()
-				.removeListener(beforeRequestAreaListener);
-		}
-		if (afterResponseAreaListener != null) {
-			afterResponseCodeArea.textProperty()
-				.removeListener(afterResponseAreaListener);
-		}
-
-		methodCombo.setValue(req.getMethod());
-		urlField.setText(req.getUrl());
-		bodyArea.replaceText(req.getBody());
-
-		headers.clear();
-		headersList.getChildren().clear();
-		req.getHeaders().forEach((k, v) -> {
-			var entry = new AbstractMap.SimpleEntry<>(k, v);
-			headers.add(entry);
-			addHeaderRowToUi(entry);
-		});
-
-		methodListener = (obs, old, val) -> {
-			req.setMethod(val);
-			persistenceService.save();
-		};
-		urlListener = (obs, old, val) -> {
-			req.setUrl(val);
-			persistenceService.save();
-		};
-		bodyListener = (obs, old, val) -> {
-			req.setBody(val);
-			persistenceService.save();
-		};
-		methodCombo.valueProperty().addListener(methodListener);
-		urlField.textProperty().addListener(urlListener);
-		bodyArea.textProperty().addListener(bodyListener);
-
-		headersListener = change -> {
-			req.getHeaders().clear();
-			headers.forEach(entry -> req.getHeaders().put(entry.getKey(), entry.getValue()));
-			persistenceService.save();
-		};
-		headers.addListener(headersListener);
-
-		beforeRequestCodeArea.replaceText(req.getVarsDefinition());
-		beforeRequestAreaListener = (obs, old, val) -> {
-			req.setVarsDefinition(val);
-			persistenceService.save();
-		};
-		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
-
-		afterResponseCodeArea.replaceText(req.getOnResponse());
-		afterResponseAreaListener = (obs, old, val) -> {
-			req.setOnResponse(val);
-			persistenceService.save();
-		};
-		afterResponseCodeArea.textProperty().addListener(afterResponseAreaListener);
 	}
 
 	@FXML
@@ -296,6 +319,12 @@ public class MainController {
 		persistenceService.save();
 	}
 
+
+	public void clearLogs() {
+		logsArea.clear();
+		DependenciesContainer.logger().clearLogs();
+	}
+
 	private void addHeaderRowToUi(Map.Entry<String, String> entry) {
 		HBox row = new HBox(10);
 		Label label = new Label(entry.getKey() + ": " + entry.getValue());
@@ -312,61 +341,4 @@ public class MainController {
 		headersList.getChildren().add(row);
 	}
 
-	public void clearLogs() {
-		logsArea.clear();
-		DependenciesContainer.logger().clearLogs();
-	}
-
-	public void onTitleBarMousePressed(MouseEvent event) {
-		xOffset = event.getSceneX();
-		yOffset = event.getSceneY();
-	}
-
-	public void onTitleBarMouseDragged(MouseEvent event) {
-		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		stage.setX(event.getScreenX() - xOffset);
-		stage.setY(event.getScreenY() - yOffset);
-	}
-
-	public void minimizeStage() {
-		getStage().setIconified(true);
-	}
-
-	public void maximizeRestoreStage() {
-		Stage stage = getStage();
-		stage.setMaximized(!stage.isMaximized());
-	}
-
-	public void closeStage() {
-		getStage().close();
-	}
-
-	private Stage getStage() {
-		return (Stage) methodCombo.getScene().getWindow();
-	}
-
-	@FXML
-	public void cancelRequest() {
-		if (requestRunner != null && !requestRunner.isDone()) {
-			requestRunner.cancel(true);
-			Platform.runLater(() -> {
-				statusLabel.setText("Canceled");
-				responseArea.setText("Canceled");
-			});
-			DependenciesContainer.logger().logMessage("Request cancelled\n");
-		}
-	}
-
-	// TODO: add beautify js button
-//	Button beautifyJsBtn = new Button("Beautify JS");
-//beautifyJsBtn.setOnAction(e -> beforeRequestCodeArea.beautifyCode());
-//varsContainer.getChildren().add(beautifyJsBtn);
-
-	@FXML
-	public void uploadLogs(Event event) {
-		Tab tab = (Tab) event.getSource();
-		if (tab.isSelected()) {
-			Platform.runLater(() -> logsArea.setLogs());
-		}
-	}
 }

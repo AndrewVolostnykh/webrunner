@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.grphics;
+package andrew_volostnykh.webrunner.graphics;
 
 import javafx.scene.Cursor;
 import javafx.scene.Node;

@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.grphics.components.js_editor;
+package andrew_volostnykh.webrunner.graphics.components.js_editor;
 
 import lombok.SneakyThrows;
 import org.graalvm.polyglot.Context;

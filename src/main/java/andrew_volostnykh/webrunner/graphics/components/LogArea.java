@@ -1,4 +1,4 @@
-package andrew_volostnykh.webrunner.grphics.components;
+package andrew_volostnykh.webrunner.graphics.components;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import javafx.application.Platform;

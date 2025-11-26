@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import andrew_volostnykh.webrunner.grphics.components.LogArea?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
-<?import javafx.scene.layout.AnchorPane?>
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="andrew_volostnykh.webrunner.MainController"
+      fx:controller="andrew_volostnykh.webrunner.graphics.controller.MainController"
       spacing="0"
       prefWidth="900" prefHeight="700">
 
@@ -35,118 +25,15 @@
         <Button text="✕" onAction="#closeStage" styleClass="window-close-button"/>
     </HBox>
 
-    <SplitPane
-               orientation="HORIZONTAL"
-               dividerPositions="0.22"
-               VBox.vgrow="ALWAYS">
+    <SplitPane orientation="HORIZONTAL" dividerPositions="0.22" VBox.vgrow="ALWAYS">
 
-        <!-- 📂 LEFT PANEL: Collections Tree -->
         <VBox spacing="10">
-
             <HBox spacing="10">
                 <Pane HBox.hgrow="ALWAYS"/>
             </HBox>
-
             <TreeView fx:id="collectionTree" VBox.vgrow="ALWAYS"/>
         </VBox>
 
-        <VBox spacing="10" VBox.vgrow="ALWAYS">
-
-            <GridPane hgap="10" vgap="5">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="80"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints minWidth="40"/>
-                    <ColumnConstraints minWidth="40"/>
-                </columnConstraints>
-
-                <ComboBox fx:id="methodCombo" promptText="Method" GridPane.columnIndex="0"/>
-                <TextField fx:id="urlField" promptText="https://api.example.com" GridPane.columnIndex="1"/>
-
-                <Button fx:id="sendButton" onAction="#sendRequest" GridPane.columnIndex="2"
-                        styleClass="request-button">
-                    <graphic>
-                        <FontIcon iconLiteral="mdi-send:20" />
-                    </graphic>
-                </Button>
-
-                <Button fx:id="cancelRequest" onAction="#cancelRequest" GridPane.columnIndex="3"
-                        styleClass="request-button">
-                    <graphic>
-                        <FontIcon iconLiteral="fa-ban:20" />
-                    </graphic>
-                </Button>
-            </GridPane>
-
-            <SplitPane orientation="VERTICAL" dividerPositions="0.55" VBox.vgrow="ALWAYS">
-                <!-- Верхня зона -->
-                <VBox spacing="10" VBox.vgrow="ALWAYS">
-                    <TabPane VBox.vgrow="ALWAYS">
-                        <Tab text="Body">
-                            <VBox spacing="5" VBox.vgrow="ALWAYS">
-                                <VBox fx:id="bodyContainer" VBox.vgrow="ALWAYS"/>
-                            </VBox>
-                        </Tab>
-                        <Tab text="Headers">
-                            <VBox spacing="10" xmlns:fx="http://javafx.com/fxml">
-                                <HBox spacing="5">
-                                    <TextField fx:id="headerKeyField" promptText="Header Key"/>
-                                    <TextField fx:id="headerValueField" promptText="Header Value"/>
-                                    <Button text="Add" onAction="#addHeader"/>
-                                </HBox>
-
-                                <VBox fx:id="headersList" spacing="5"/>
-                            </VBox>
-                        </Tab>
-                        <Tab text="Testing">
-                            <TabPane>
-                                <!-- Vars Definition -->
-                                <Tab text="Before Request">
-                                    <VBox fx:id="beforeRequestContainer" VBox.vgrow="ALWAYS"/>
-                                </Tab>
-
-                                <!-- On Response -->
-                                <Tab text="On Response">
-                                    <VBox fx:id="afterResponseContainer" VBox.vgrow="ALWAYS"/>
-                                </Tab>
-                            </TabPane>
-                        </Tab>
-                    </TabPane>
-                </VBox>
-
-                <VBox spacing="5" VBox.vgrow="ALWAYS" SplitPane.resizableWithParent="true">
-                    <Label fx:id="statusLabel"/>
-
-                    <TabPane VBox.vgrow="ALWAYS">
-                        <Tab text="Result">
-                            <AnchorPane>
-                                <TextArea fx:id="responseArea"
-                                          editable="false"
-                                          AnchorPane.topAnchor="0"
-                                          AnchorPane.bottomAnchor="0"
-                                          AnchorPane.leftAnchor="0"
-                                          AnchorPane.rightAnchor="0"/>
-                            </AnchorPane>
-                        </Tab>
-                        <Tab text="Headers">
-                            <AnchorPane>
-                                <TextArea fx:id="responseHeaders"
-                                          editable="false"
-                                          AnchorPane.topAnchor="0"
-                                          AnchorPane.bottomAnchor="0"
-                                          AnchorPane.leftAnchor="0"
-                                          AnchorPane.rightAnchor="0"/>
-                            </AnchorPane>
-                        </Tab>
-                        <Tab text="Logs" onSelectionChanged="#uploadLogs">
-                            <VBox spacing="5" xmlns:fx="http://javafx.com/fxml">
-                                <LogArea fx:id="logsArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
-                                <Button text="Clear logs" onAction="#clearLogs"/>
-                            </VBox>
-                        </Tab>
-                    </TabPane>
-                </VBox>
-            </SplitPane>
-        </VBox>
+        <VBox fx:id="mainEditorContainer" VBox.vgrow="ALWAYS"/>
     </SplitPane>
 </VBox>
