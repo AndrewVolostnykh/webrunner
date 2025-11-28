@@ -5,7 +5,7 @@ import andrew_volostnykh.webrunner.graphics.RequestEditorUI;
 import andrew_volostnykh.webrunner.graphics.components.LogArea;
 import andrew_volostnykh.webrunner.graphics.components.js_editor.JsCodeEditor;
 import andrew_volostnykh.webrunner.graphics.components.json_editor.JsonCodeArea;
-import andrew_volostnykh.webrunner.service.TextBeautifierService;
+import andrew_volostnykh.webrunner.service.TextFormatterService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
@@ -265,7 +265,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 				String formattedBody = httpService.formatJson(result.body());
 				statusLabel.setText("Response code: " + result.statusCode());
 				responseArea.setText(formattedBody);
-				responseHeaders.setText(TextBeautifierService.beautyString(result.headers()));
+				responseHeaders.setText(TextFormatterService.beautyString(result.headers()));
 
 				try {
 					jsExecutorService

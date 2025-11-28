@@ -16,6 +16,7 @@
                 <ColumnConstraints minWidth="120"/>         <!-- Host -->
                 <ColumnConstraints minWidth="120"/>         <!-- Service -->
                 <ColumnConstraints hgrow="ALWAYS"/>         <!-- Method -->
+                <ColumnConstraints minWidth="40"/>         <!-- Load Services -->
                 <ColumnConstraints minWidth="40"/>          <!-- Send -->
                 <ColumnConstraints minWidth="40"/>          <!-- Cancel -->
             </columnConstraints>
@@ -26,14 +27,21 @@
 
             <ComboBox fx:id="methodCombo" promptText="Select Method" GridPane.columnIndex="2"/>
 
-            <Button fx:id="sendButton" onAction="#sendRequest" GridPane.columnIndex="3"
+            <Button fx:id="loadServicesButton" onAction="#loadServices" GridPane.columnIndex="3"
+                    styleClass="request-button">
+                <graphic>
+                    <FontIcon iconLiteral="mdi-reload:20"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="sendButton" onAction="#sendRequest" GridPane.columnIndex="4"
                     styleClass="request-button">
                 <graphic>
                     <FontIcon iconLiteral="mdi-send:20"/>
                 </graphic>
             </Button>
 
-            <Button fx:id="cancelButton" onAction="#cancelRequest" GridPane.columnIndex="4"
+            <Button fx:id="cancelButton" onAction="#cancelRequest" GridPane.columnIndex="5"
                     styleClass="request-button">
                 <graphic>
                     <FontIcon iconLiteral="fa-ban:20"/>

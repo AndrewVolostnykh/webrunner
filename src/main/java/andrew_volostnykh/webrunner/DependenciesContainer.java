@@ -1,6 +1,7 @@
 package andrew_volostnykh.webrunner;
 
 import andrew_volostnykh.webrunner.service.Logger;
+import andrew_volostnykh.webrunner.service.grpc.GrpcReflectionService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
@@ -21,9 +22,14 @@ public class DependenciesContainer {
 	private static final Logger logger = new Logger();
 	private static final NavigationTreePersistenceService
 		NAVIGATION_TREE_PERSISTANCE_SERVICE = new NavigationTreePersistenceService();
+	private static final GrpcReflectionService GRPC_REFLECTION_SERVICE = new GrpcReflectionService();
 
 	public static NavigationTreePersistenceService collectionPersistenceService() {
 		return NAVIGATION_TREE_PERSISTANCE_SERVICE;
+	}
+
+	public static GrpcReflectionService grpcReflectionService() {
+		return GRPC_REFLECTION_SERVICE;
 	}
 
 	// FIXME: replace factory with single instance

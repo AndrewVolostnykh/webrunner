@@ -1,6 +1,6 @@
 package andrew_volostnykh.webrunner.graphics.components.json_editor;
 
-import andrew_volostnykh.webrunner.service.TextBeautifierService;
+import andrew_volostnykh.webrunner.service.TextFormatterService;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -70,7 +70,7 @@ public class JsonCodeArea
 
 	public void beautifyBody() {
 		try {
-			String pretty = TextBeautifierService.formatJsonWithPlaceholders(this.getText());
+			String pretty = TextFormatterService.formatJsonWithPlaceholders(this.getText());
 			this.replaceText(pretty);
 			this.setStyleSpans(0, SyntaxHighlighter.computeHighlighting(pretty));
 		} catch (Exception ignored) {

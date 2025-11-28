@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class TextBeautifierService {
+public class TextFormatterService {
 
 	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^{}]+)}}");
 
@@ -22,6 +22,11 @@ public class TextBeautifierService {
 		} catch (Exception e) {
 			return json;
 		}
+	}
+
+	public static String shortName(String fullName) {
+		if (fullName == null) return null;
+		return fullName.substring(fullName.lastIndexOf('.') + 1);
 	}
 
 	public static String formatJsonWithPlaceholders(String json) {

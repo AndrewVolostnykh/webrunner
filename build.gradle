@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
 	id 'application'
-	id 'org.openjfx.javafxplugin' version '0.0.13' // 🔥 Повертаємо
+	id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 group 'andrew_volostnykh'
@@ -47,18 +47,23 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.2'
 
-	// Graal Polyglot
 	implementation "org.graalvm.polyglot:polyglot:24.1.0"
 	implementation "org.graalvm.polyglot:js:24.1.0"
 
-	// Lombok
+	implementation "io.grpc:grpc-netty:1.68.0"
+	implementation "io.grpc:grpc-protobuf:1.68.0"
+	implementation "io.grpc:grpc-stub:1.68.0"
+	implementation "io.grpc:grpc-services:1.68.0"
+	implementation "com.google.protobuf:protobuf-java-util:4.28.2"
+
 	compileOnly 'org.projectlombok:lombok:1.18.42'
 	annotationProcessor 'org.projectlombok:lombok:1.18.42'
-	testCompileOnly 'org.projectlombok:lombok:1.18.42'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 
 	testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.42'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 }
 
 test {
@@ -66,7 +71,6 @@ test {
 }
 
 run {
-	// GraalJS рекомендація
 	jvmArgs = [
 			'-Dpolyglot.engine.WarnInterpreterOnly=false',
 			'--add-opens=java.base/java.lang=ALL-UNNAMED'
