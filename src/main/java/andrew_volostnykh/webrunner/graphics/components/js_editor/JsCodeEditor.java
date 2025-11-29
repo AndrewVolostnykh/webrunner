@@ -39,19 +39,78 @@ public class JsCodeEditor
 	}
 
 	private void handleAutoBrackets(KeyEvent event) {
-		String c = event.getCharacter();
+		String ch = event.getCharacter();
+		int pos = getCaretPosition();
 
-		String match = switch (c) {
-			case "{" -> "}";
-			case "[" -> "]";
-			case "(" -> ")";
-			case "\"" -> "\"";
-			default -> null;
-		};
-		if (match != null) {
-			int pos = getCaretPosition();
-			replaceText(pos, pos, match);
-			moveTo(pos); // 🟢 курсор між дужками
+		switch (ch) {
+			case "{":
+				event.consume();
+				replaceText(pos - 1, pos, "{}");
+				moveTo(pos);
+				break;
+
+			case "<":
+				event.consume();
+				replaceText(pos - 1, pos, "<>");
+				moveTo(pos);
+				break;
+
+			case "(":
+				event.consume();
+				replaceText(pos - 1, pos, "()");
+				moveTo(pos);
+				break;
+
+			case "[":
+				event.consume();
+				replaceText(pos - 1, pos, "[]");
+				moveTo(pos);
+				break;
+
+			case "\"":
+				if (ch.equals(getText(pos, pos + 1))) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				} else {
+					event.consume();
+					replaceText(pos - 1, pos, "\"\"");
+					moveTo(pos);
+				}
+				break;
+			case "`":
+				if (ch.equals(getText(pos, pos + 1))) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				} else {
+					event.consume();
+					replaceText(pos - 1, pos, "``");
+					moveTo(pos);
+				}
+				break;
+			case "'":
+				if (ch.equals(getText(pos, pos + 1))) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				} else {
+					event.consume();
+					replaceText(pos - 1, pos, "''");
+					moveTo(pos);
+				}
+				break;
+
+			case "}":
+			case "]":
+			case ")":
+			case ">":
+				if (pos < getLength() && getText(pos, pos + 1).equals(ch)) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				}
+				break;
 		}
 	}
 
@@ -70,10 +129,8 @@ public class JsCodeEditor
 		this.setStyleSpans(0, SyntaxHighlighter.computeHighlighting(getText()));
 	}
 
-	// TODO: maybe attach it directly in MainController?
 	public void attachTo(VBox container) {
 		VBox.setVgrow(this, Priority.ALWAYS);
 		container.getChildren().add(this);
 	}
-
 }

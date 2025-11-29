@@ -15,13 +15,19 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.util.JsonFormat;
 import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.stub.ClientCalls;
+import io.grpc.stub.MetadataUtils;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -32,10 +38,13 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,6 +68,15 @@ public class GrpcRequestUIController implements RequestEditorUI {
 	@FXML
 	private VBox bodyContainer;
 	private JsonCodeArea bodyArea;
+
+	@FXML
+	private VBox headersList;
+	@FXML
+	private TextField headerKeyField;
+	@FXML
+	private TextField headerValueField;
+	private final ObservableList<Entry<String, String>> headers = FXCollections.observableArrayList();
+	private ListChangeListener<Entry<String, String>> headersListener;
 
 	@FXML
 	private VBox beforeRequestContainer;
@@ -213,6 +231,39 @@ public class GrpcRequestUIController implements RequestEditorUI {
 		}
 	}
 
+	@FXML
+	public void addHeader() {
+		String key = headerKeyField.getText();
+		String value = headerValueField.getText();
+		if (key == null || key.isBlank()) {
+			return;
+		}
+
+		var entry = new AbstractMap.SimpleEntry<>(key, value);
+		headers.add(entry);
+		addHeaderRowToUi(entry);
+
+		headerKeyField.clear();
+		headerValueField.clear();
+		persistenceService.save();
+	}
+
+	private void addHeaderRowToUi(Map.Entry<String, String> entry) {
+		HBox row = new HBox(10);
+		Label label = new Label(entry.getKey() + ": " + entry.getValue());
+
+		Button removeBtn = new Button("✖");
+		removeBtn.setOnAction(e -> {
+			headers.remove(entry);
+			headersList.getChildren().remove(row);
+			persistenceService.save();
+		});
+
+		row.getChildren().addAll(label, removeBtn);
+		row.getStyleClass().add("headers-row");
+		headersList.getChildren().add(row);
+	}
+
 	public void clearLogs() {
 		logsArea.clear();
 	}
@@ -234,6 +285,16 @@ public class GrpcRequestUIController implements RequestEditorUI {
 			persistenceService.save();
 		};
 		bodyArea.textProperty().addListener(bodyListener);
+
+		if (headersListener != null) {
+			headers.removeListener(headersListener);
+		}
+		headersListener = change -> {
+			request.getHeaders().clear();
+			headers.forEach(entry -> request.getHeaders().put(entry.getKey(), entry.getValue()));
+			persistenceService.save();
+		};
+		headers.addListener(headersListener);
 
 		if (hostListener != null) {
 			hostField.textProperty().removeListener(hostListener);
@@ -344,8 +405,18 @@ public class GrpcRequestUIController implements RequestEditorUI {
 								DynamicMessage.getDefaultInstance(outputDesc)))
 							.build();
 
+					Metadata metadata = new Metadata();
+					headers.forEach(entry -> {
+						Metadata.Key<String> key = Metadata.Key.of(entry.getKey(), Metadata.ASCII_STRING_MARSHALLER);
+						metadata.put(key, entry.getValue());
+					});
+
+					Channel channelWithHeaders = ClientInterceptors.intercept(
+						channel, MetadataUtils.newAttachHeadersInterceptor(metadata)
+					);
+
 					DynamicMessage response = ClientCalls.blockingUnaryCall(
-						channel, grpcMethod, CallOptions.DEFAULT, requestMsg
+						channelWithHeaders, grpcMethod, CallOptions.DEFAULT, requestMsg
 					);
 
 					String jsonResponse = JsonFormat.printer().print(response);

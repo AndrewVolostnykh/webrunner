@@ -41,25 +41,48 @@ public class JsonCodeArea
 			}
 		});
 
-		this.setOnKeyTyped(event -> {
-			String ch = event.getCharacter();
-			int pos = this.getCaretPosition();
+		this.setOnKeyTyped(this::handleAutoBrackets);
+//		this.addEventFilter(KeyEvent.KEY_PRESSED, this::handleAutoBrackets);
+	}
 
-			switch (ch) {
-				case "{":
-					this.insertText(pos, "}");
-					this.moveTo(pos);
-					break;
-				case "[":
-					this.insertText(pos, "]");
-					this.moveTo(pos);
-					break;
-				case "\"":
-					this.insertText(pos, "\"");
-					this.moveTo(pos);
-					break;
-			}
-		});
+	private void handleAutoBrackets(KeyEvent event) {
+		String ch = event.getCharacter();
+		int pos = getCaretPosition();
+
+		switch (ch) {
+			case "{":
+				event.consume();
+				replaceText(pos - 1, pos, "{}");
+				moveTo(pos);
+				break;
+
+			case "[":
+				event.consume();
+				replaceText(pos - 1, pos, "[]");
+				moveTo(pos);
+				break;
+
+			case "\"":
+				if (ch.equals(getText(pos, pos + 1))) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				} else {
+					event.consume();
+					replaceText(pos - 1, pos, "\"\"");
+					moveTo(pos);
+				}
+				break;
+
+			case "}":
+			case "]":
+				if (pos < getLength() && getText(pos, pos + 1).equals(ch)) {
+					event.consume();
+					moveTo(pos + 1);
+					replaceText(pos, pos + 1, "");
+				}
+				break;
+		}
 	}
 
 	@Override

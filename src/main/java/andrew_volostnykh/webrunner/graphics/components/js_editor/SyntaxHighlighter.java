@@ -12,10 +12,14 @@ class SyntaxHighlighter {
 
 	private static final Pattern PATTERN = Pattern.compile(
 		"(?<KEYWORD>\\b(var|let|const|function|return|if|else)\\b)"
-			+ "|(?<STRING>\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*')"
+			+ "|(?<STRING>"
+				+ "\"(\\\\.|[^\"\\\\])*\""
+				+ "|'(\\\\.|[^'\\\\])*'"
+				+ "|`(\\\\.|[^`\\\\])*`"
+			+ ")"
 			+ "|(?<NUMBER>\\b\\d+(\\.\\d+)?\\b)"
 			+ "|(?<VARIABLE>\\{\\{[^}]+}})"
-			+ "|(?<COMMENT>//[^\n]*|/\\*(.|\\R)*?\\*/)"
+			+ "|(?<COMMENT>//[^\\n]*|/\\*(.|\\R)*?\\*/)"
 			+ "|(?<BRACE>[(){}\\[\\]])"
 	);
 
@@ -33,13 +37,11 @@ class SyntaxHighlighter {
 								matcher.group("BRACE")     != null ? "brace"   :
 									"plain-text";
 
-			// 🔥 Тепер все між match – теж біле
 			spansBuilder.add(Collections.singleton("plain-text"), matcher.start() - last);
 			spansBuilder.add(Collections.singleton(style), matcher.end() - matcher.start());
 			last = matcher.end();
 		}
 
-		// 🔥 Завершуємо кінець тексту звичайним стилем
 		spansBuilder.add(Collections.singleton("plain-text"), text.length() - last);
 		return spansBuilder.create();
 	}

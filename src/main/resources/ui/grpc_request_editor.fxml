@@ -60,7 +60,17 @@
                             <VBox fx:id="bodyContainer" VBox.vgrow="ALWAYS"/>
                         </VBox>
                     </Tab>
+                    <Tab text="Headers">
+                        <VBox spacing="10" xmlns:fx="http://javafx.com/fxml">
+                            <HBox spacing="5">
+                                <TextField fx:id="headerKeyField" promptText="Header Key"/>
+                                <TextField fx:id="headerValueField" promptText="Header Value"/>
+                                <Button text="Add" onAction="#addHeader"/>
+                            </HBox>
 
+                            <VBox fx:id="headersList" spacing="5"/>
+                        </VBox>
+                    </Tab>
                     <Tab text="Testing">
                         <TabPane>
                             <Tab text="Before Request">
