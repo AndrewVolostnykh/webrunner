@@ -23,6 +23,32 @@ public class RequestDefinition {
 	private String onResponse;
 	private RequestType type;
 
+	private String selectedService;
+	private String selectedMethod;
+
+	// HTTP constructor
+	public RequestDefinition(
+		String id,
+		String name,
+		String method,
+		String url,
+		Map<String, String> headers,
+		String body,
+		String varsDefinition,
+		String onResponse,
+		RequestType type
+	) {
+		this.id = id;
+		this.name = name;
+		this.method = method;
+		this.url = url;
+		this.headers = headers;
+		this.body = body;
+		this.varsDefinition = varsDefinition;
+		this.onResponse = onResponse;
+		this.type = type;
+	}
+
 	public RequestDefinition deepCopy() {
 		return new RequestDefinition(
 			this.id,
@@ -33,7 +59,9 @@ public class RequestDefinition {
 			this.body,
 			this.varsDefinition,
 			this.onResponse,
-			this.type
+			this.type,
+			this.selectedService,
+			this.selectedMethod
 		);
 	}
 }

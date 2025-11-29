@@ -20,10 +20,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcReflectionService {
 
-	public CompletableFuture<Map<String, List<String>>> getAllServicesAndMethodsAsync(
+	public CompletableFuture<Map<String, Map<String, GrpcMethodDefinition>>> getAllServicesAndMethodsAsync(
 		String host
 	) {
-		CompletableFuture<Map<String, List<String>>> future = new CompletableFuture<>();
+		CompletableFuture<Map<String, Map<String, GrpcMethodDefinition>>> future = new CompletableFuture<>();
 
 		listServices(host)
 			.thenAccept(serviceNames -> {
@@ -32,7 +32,7 @@ public class GrpcReflectionService {
 					return;
 				}
 
-				Map<String, List<String>> result = new LinkedHashMap<>();
+				Map<String, Map<String, GrpcMethodDefinition>> result = new LinkedHashMap<>();
 				CompletableFuture<?>[] methodFutures = new CompletableFuture<?>[serviceNames.size()];
 
 				AtomicInteger index = new AtomicInteger(0);
@@ -42,7 +42,14 @@ public class GrpcReflectionService {
 					methodFutures[pos] = listMethods(host, serviceName)
 						.thenAccept(methods -> result.put(serviceName, methods))
 						.exceptionally(ex -> {
-							result.put(serviceName, List.of("⚠ ERROR: " + ex.getMessage()));
+							result.put(serviceName, Map.of(
+								"ignore",
+								new GrpcMethodDefinition(
+									"⚠ ERROR: " + ex.getMessage(),
+									null,
+									null
+								)
+							));
 							return null;
 						});
 				}
@@ -110,11 +117,11 @@ public class GrpcReflectionService {
 		return future;
 	}
 
-	private CompletableFuture<List<String>> listMethods(
+	private CompletableFuture<Map<String, GrpcMethodDefinition>> listMethods(
 		String host,
 		String serviceName
 	) {
-		CompletableFuture<List<String>> future = new CompletableFuture<>();
+		CompletableFuture<Map<String, GrpcMethodDefinition>> future = new CompletableFuture<>();
 
 		ManagedChannel channel = ManagedChannelBuilder
 			.forTarget(host)
@@ -124,7 +131,7 @@ public class GrpcReflectionService {
 		ServerReflectionGrpc.ServerReflectionStub asyncStub =
 			ServerReflectionGrpc.newStub(channel);
 
-		List<String> methods = new ArrayList<>();
+		Map<String, GrpcMethodDefinition> methods = new HashMap<>();
 
 		StreamObserver<ServerReflectionResponse> responseObserver =
 			new StreamObserver<>() {
@@ -185,7 +192,14 @@ public class GrpcReflectionService {
 						for (Descriptors.FileDescriptor fd : built.values()) {
 							for (Descriptors.ServiceDescriptor service : fd.getServices()) {
 								if (service.getFullName().equals(serviceName)) {
-									service.getMethods().forEach(m -> methods.add(m.getName()));
+									service.getMethods().forEach(m -> methods.put(
+										m.getName(),
+										new GrpcMethodDefinition(
+											m.getName(),
+											m.getInputType(),
+											m.getOutputType()
+										)
+									));
 								}
 							}
 						}

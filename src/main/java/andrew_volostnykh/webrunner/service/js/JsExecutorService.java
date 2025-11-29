@@ -17,6 +17,21 @@ public class JsExecutorService extends AbstractService {
 	public Map<String, Object> executeJsAfterRequest(
 		String jsCode,
 		Map<String, Object> vars,
+		String response
+	) {
+		return
+			executeJsAfterRequest(
+				jsCode,
+				vars,
+				response,
+				Map.of(),
+				0
+			);
+	}
+
+	public Map<String, Object> executeJsAfterRequest(
+		String jsCode,
+		Map<String, Object> vars,
 		String responseBody,
 		Map<String, List<String>> headers,
 		int statusCode
@@ -70,6 +85,10 @@ public class JsExecutorService extends AbstractService {
 	) {
 		Context context = Context.newBuilder("js")
 			.build();
+
+		PredefinedFunctions.registerHelperFunctions(context);
+		PredefinedFunctions.registerCommonFunctions(context);
+
 		Value bindings = context.getBindings("js");
 		bindings.putMember("chainGlobalVars", chainGlobalVars);
 
