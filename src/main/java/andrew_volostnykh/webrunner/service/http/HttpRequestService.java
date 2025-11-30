@@ -57,7 +57,7 @@ public class HttpRequestService
 
 			return objectMapper.writeValueAsString(obj);
 		} catch (Exception e) {
-			logger.logMessage("WARN: Cannot beautify json: " + e.getMessage());
+			requestsLogger.logMessage("WARN: Cannot beautify json: " + e.getMessage());
 			return json;
 		}
 	}

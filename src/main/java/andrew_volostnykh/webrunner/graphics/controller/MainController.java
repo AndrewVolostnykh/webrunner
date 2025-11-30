@@ -1,5 +1,6 @@
 package andrew_volostnykh.webrunner.graphics.controller;
 
+import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.graphics.RequestEditorUI;
 import andrew_volostnykh.webrunner.graphics.RequestUIFactory;
 import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
@@ -70,6 +71,7 @@ public class MainController {
 			throw new RuntimeException("Failed to load UI", e);
 		}
 
+		DependenciesContainer.loggersContext().setCurrentRequest(req.getId());
 		activeEditor.loadRequest(req);
 	}
 

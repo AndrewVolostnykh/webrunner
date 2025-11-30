@@ -37,7 +37,7 @@ public class VarsApplicator extends AbstractService {
 				);
 
 		} catch (Exception ex) {
-			logger.logMessage("ERROR: " + ex.getMessage());
+			requestsLogger.logMessage("ERROR: " + ex.getMessage());
 			return jsonBody;
 		}
 	}

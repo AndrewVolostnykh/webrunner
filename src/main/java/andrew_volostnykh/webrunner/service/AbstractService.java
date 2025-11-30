@@ -1,12 +1,13 @@
 package andrew_volostnykh.webrunner.service;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
+import andrew_volostnykh.webrunner.service.logs.request.RequestLogger;
 
 public class AbstractService {
 
-	protected Logger logger;
+	protected RequestLogger requestsLogger;
 
 	protected AbstractService() {
-		this.logger = DependenciesContainer.logger();
+		this.requestsLogger = DependenciesContainer.logger();
 	}
 }

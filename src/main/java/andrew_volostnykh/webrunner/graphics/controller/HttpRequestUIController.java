@@ -8,6 +8,7 @@ import andrew_volostnykh.webrunner.graphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.service.TextFormatterService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
+import andrew_volostnykh.webrunner.service.js.RequestJsExecutor;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
 import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
@@ -215,6 +216,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 		responseArea.setText("");
 
 		AtomicReference<Map<String, Object>> vars = new AtomicReference<>();
+		RequestJsExecutor requestJsExecutor = JsExecutorService.requestExecutor();
 
 		requestRunner = CompletableFuture
 			.supplyAsync(() -> {
@@ -229,12 +231,18 @@ public class HttpRequestUIController implements RequestEditorUI {
 				String preparedBody = bodyArea.getText();
 				if (beforeRequestCodeArea.getText() != null && !beforeRequestCodeArea.getText().isBlank()) {
 
-					Map<String, Object> bodyVars = jsExecutorService
-						.executeJsVariables(beforeRequestCodeArea.getText());
+					requestJsExecutor.executeBeforeRequest(
+						beforeRequestCodeArea.getText(),
+						headersMap,
+						preparedBody
+					);
 
-					vars.set(bodyVars);
+					vars.set(requestJsExecutor.getVars());
 
-					preparedBody = varsApplicator.applyVariables(bodyArea.getText(), bodyVars);
+					preparedBody = varsApplicator.applyVariables(
+						bodyArea.getText(),
+						requestJsExecutor.getVars()
+					);
 				}
 
 				try {
@@ -268,14 +276,12 @@ public class HttpRequestUIController implements RequestEditorUI {
 				responseHeaders.setText(TextFormatterService.beautyString(result.headers()));
 
 				try {
-					jsExecutorService
-						.executeJsAfterRequest(
-							afterResponseCodeArea.getText(),
-							vars.get(),
-							result.body(),
-							result.headers(),
-							result.statusCode()
-						);
+					requestJsExecutor.executeAfterRequest(
+						afterResponseCodeArea.getText(),
+						result.body(),
+						result.headers(),
+						result.statusCode()
+					);
 				} catch (Exception e) {
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 				}

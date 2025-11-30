@@ -462,7 +462,14 @@ public class GrpcRequestUIController implements RequestEditorUI {
 
 	@Override
 	public void cancelRequest() {
-
+		if (requestRunner != null && !requestRunner.isDone()) {
+			requestRunner.cancel(true);
+			Platform.runLater(() -> {
+				statusLabel.setText("Canceled");
+				responseArea.setText("Canceled");
+			});
+			DependenciesContainer.logger().logMessage("Request cancelled\n");
+		}
 	}
 
 	@Override

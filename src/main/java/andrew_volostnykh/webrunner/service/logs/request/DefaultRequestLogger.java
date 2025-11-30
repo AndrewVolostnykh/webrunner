@@ -1,9 +1,9 @@
-package andrew_volostnykh.webrunner.service;
+package andrew_volostnykh.webrunner.service.logs.request;
 
-public class Logger {
-	// TODO:
-	//  implement logger container. in container should be stored all needed loggers which can be selected by
-	//  request id
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+public class DefaultRequestLogger implements RequestLogger {
 	private final StringBuilder logs = new StringBuilder();
 
 	public void logMessage(String message) {

@@ -3,7 +3,6 @@ package andrew_volostnykh.webrunner.service.js;
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.service.AbstractService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyObject;
@@ -13,6 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 public class JsExecutorService extends AbstractService {
+
+	public static RequestJsExecutor requestExecutor() {
+		Context context = Context.newBuilder("js")
+			.build();
+
+		PredefinedFunctions.registerHelperFunctions(context);
+		PredefinedFunctions.registerCommonFunctions(context);
+
+		return
+			new RequestJsExecutor(context);
+	}
 
 	public Map<String, Object> executeJsAfterRequest(
 		String jsCode,
