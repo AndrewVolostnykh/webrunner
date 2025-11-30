@@ -8,6 +8,7 @@ import andrew_volostnykh.webrunner.graphics.components.json_editor.JsonCodeArea;
 import andrew_volostnykh.webrunner.service.TextFormatterService;
 import andrew_volostnykh.webrunner.service.grpc.GrpcMethodDefinition;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
+import andrew_volostnykh.webrunner.service.js.RequestJsExecutor;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
 import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
@@ -43,6 +44,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -359,6 +361,7 @@ public class GrpcRequestUIController implements RequestEditorUI {
 			}
 
 			AtomicReference<Map<String, Object>> vars = new AtomicReference<>();
+			RequestJsExecutor requestJsExecutor = JsExecutorService.requestExecutor();
 
 			statusLabel.setText("Sending gRPC...");
 			responseArea.setText("");
@@ -380,15 +383,24 @@ public class GrpcRequestUIController implements RequestEditorUI {
 					Descriptors.Descriptor inputDesc = grpcMethodDefinition.getInputType();
 					Descriptors.Descriptor outputDesc = grpcMethodDefinition.getOutputType();
 
+					Map<String, String> headersMap = new HashMap<>();
+					headers.forEach(entry -> headersMap.put(entry.getKey(), entry.getValue()));
+
 					String preparedBody = bodyArea.getText();
 					if (beforeRequestCodeArea.getText() != null && !beforeRequestCodeArea.getText().isBlank()) {
 
-						Map<String, Object> bodyVars = jsExecutorService
-							.executeJsVariables(beforeRequestCodeArea.getText());
+						requestJsExecutor.executeBeforeRequest(
+							beforeRequestCodeArea.getText(),
+							headersMap,
+							preparedBody
+						);
 
-						vars.set(bodyVars);
+						vars.set(requestJsExecutor.getVars());
 
-						preparedBody = varsApplicator.applyVariables(bodyArea.getText(), bodyVars);
+						preparedBody = varsApplicator.applyVariables(
+							bodyArea.getText(),
+							requestJsExecutor.getVars()
+						);
 					}
 
 					DynamicMessage requestMsg = jsonToDynamicMessage(preparedBody, inputDesc);
@@ -421,14 +433,14 @@ public class GrpcRequestUIController implements RequestEditorUI {
 
 					String jsonResponse = JsonFormat.printer().print(response);
 
+					// FIXME: thenApply in completable future
 					try {
-						jsExecutorService
-							.executeJsAfterRequest(
-								afterResponseCodeArea.getText(),
-								vars.get(),
-								jsonResponse
-//								result.headers()
-							);
+						requestJsExecutor.executeAfterRequest(
+							afterResponseCodeArea.getText(),
+							jsonResponse,
+							new HashMap<>(),
+							0
+						);
 					} catch (Exception e) {
 						DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 					}

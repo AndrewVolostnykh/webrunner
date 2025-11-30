@@ -12,10 +12,11 @@ class SyntaxHighlighter {
 
 	private static final Pattern PATTERN = Pattern.compile(
 		"(?<KEYWORD>\\b(var|let|const|function|return|if|else)\\b)"
+			+ "|(?<SPECIAL>\\b(local|shared|env|chain)\\b)"                           // 🔥 Додано
 			+ "|(?<STRING>"
-				+ "\"(\\\\.|[^\"\\\\])*\""
-				+ "|'(\\\\.|[^'\\\\])*'"
-				+ "|`(\\\\.|[^`\\\\])*`"
+			+ "\"(\\\\.|[^\"\\\\])*\""
+			+ "|'(\\\\.|[^'\\\\])*'"
+			+ "|`(\\\\.|[^`\\\\])*`"
 			+ ")"
 			+ "|(?<NUMBER>\\b\\d+(\\.\\d+)?\\b)"
 			+ "|(?<VARIABLE>\\{\\{[^}]+}})"
@@ -29,13 +30,15 @@ class SyntaxHighlighter {
 		int last = 0;
 
 		while (matcher.find()) {
-			String style = matcher.group("KEYWORD")   != null ? "keyword" :
-				matcher.group("STRING")    != null ? "string"  :
-					matcher.group("NUMBER")    != null ? "number"  :
-						matcher.group("VARIABLE")  != null ? "variable":
-							matcher.group("COMMENT")   != null ? "comment" :
-								matcher.group("BRACE")     != null ? "brace"   :
-									"plain-text";
+			String style =
+				matcher.group("KEYWORD")    != null ? "keyword" :
+					matcher.group("SPECIAL")    != null ? "keyword-special" :      // 🔥 Новий стиль
+						matcher.group("STRING")     != null ? "string" :
+							matcher.group("NUMBER")     != null ? "number" :
+								matcher.group("VARIABLE")   != null ? "variable" :
+									matcher.group("COMMENT")    != null ? "comment" :
+										matcher.group("BRACE")      != null ? "brace" :
+											"plain-text";
 
 			spansBuilder.add(Collections.singleton("plain-text"), matcher.start() - last);
 			spansBuilder.add(Collections.singleton(style), matcher.end() - matcher.start());

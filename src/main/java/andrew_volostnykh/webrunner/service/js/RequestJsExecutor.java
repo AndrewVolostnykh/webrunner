@@ -36,9 +36,9 @@ public class RequestJsExecutor {
 	public RequestJsExecutor(
 		Context context
 	) {
-		this.env = Map.of();
-		this.chain = Map.of();
-		this.shared = Map.of();
+		this.env = new HashMap<>();
+		this.chain = new HashMap<>();
+		this.shared = new HashMap<>();
 		this.context = context;
 	}
 
@@ -48,6 +48,8 @@ public class RequestJsExecutor {
 		String body
 	) {
 		Value bindings = context.getBindings("js");
+
+		shared.put("test", "test");
 
 		bindings.putMember("env", ProxyObject.fromMap(env));
 		bindings.putMember("chain", ProxyObject.fromMap(chain));

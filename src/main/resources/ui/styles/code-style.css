@@ -59,6 +59,11 @@
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
 }
 
+.keyword-special {
+    -fx-fill: #FF8800;
+    -fx-font-weight: bold;
+}
+
 .plain-text {
     -fx-fill: #f0f0f0;
     -fx-font-family: Consolas, "JetBrains Mono", monospace;
