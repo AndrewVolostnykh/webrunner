@@ -1,7 +1,8 @@
-<p align="left">
-  <img src="./src/main/resources/icons/app-icon.png" alt="App Icon" width="48" style="vertical-align: middle;"/>
-  <span style="font-size: 32px; margin-left: 12px; vertical-align: middle;"><b>Webrunner</b></span>
+<p align="center">
+  <img src="./src/main/resources/icons/app-icon.png" width="80" alt="App Icon"><br>
 </p>
+
+<h1 align="center">Webrunner</h1>
 
 WebRunner is a lightweight desktop tool for manual and semi-automated API testing.  
 Its primary usage is building flows to execute API calls sequentially for testing purposes, with the ability to run JavaScript scripts before and after each request.
