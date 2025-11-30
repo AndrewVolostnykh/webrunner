@@ -5,7 +5,6 @@ import andrew_volostnykh.webrunner.graphics.components.CreateTreeElementDialog;
 import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
 import andrew_volostnykh.webrunner.service.persistence.definition.GrpcRequestDefinition;
 import andrew_volostnykh.webrunner.service.persistence.definition.HttpRequestDefinition;
-import andrew_volostnykh.webrunner.service.persistence.definition.RequestType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
@@ -15,7 +14,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class NavigationTreeService {
@@ -208,8 +206,6 @@ public class NavigationTreeService {
 					null,
 					request
 				);
-
-				System.err.println("FOLDER: " + folderNode.getRequest());
 
 				folderNode.addChild(newNode);
 				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);

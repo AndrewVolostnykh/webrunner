@@ -8,12 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-// TBD: define FOLDER type?
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,6 +29,7 @@ import java.util.UUID;
 )})
 
 public abstract class AbstractRequestDefinition {
+
 	protected String id;
 	protected String name;
 	protected String url;
@@ -52,7 +51,7 @@ public abstract class AbstractRequestDefinition {
 		this.url = url;
 		this.beforeRequest = beforeRequest;
 		this.afterRequest = afterRequest;
-		this.headers = new HashMap<>();
+		this.headers = headers;
 		this.body = body;
 	}
 

@@ -33,7 +33,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -273,11 +272,6 @@ public class GrpcRequestUIController implements RequestEditorUI {
 	}
 
 	@Override
-	public Node getRoot() {
-		return null;
-	}
-
-	@Override
 	public void loadRequest(AbstractRequestDefinition abstractRequest) {
 		GrpcRequestDefinition request = (GrpcRequestDefinition) abstractRequest;
 
@@ -324,7 +318,6 @@ public class GrpcRequestUIController implements RequestEditorUI {
 			persistenceService.save();
 		};
 		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
-
 
 		if (afterResponseAreaListener != null) {
 			afterResponseCodeArea.textProperty()
@@ -468,11 +461,13 @@ public class GrpcRequestUIController implements RequestEditorUI {
 
 		} catch (Exception ex) {
 			statusLabel.setText("❌ " + ex.getMessage());
-			ex.printStackTrace();
 		}
 	}
 
-	private DynamicMessage jsonToDynamicMessage(String json, Descriptors.Descriptor descriptor) throws Exception {
+	private DynamicMessage jsonToDynamicMessage(
+		String json,
+		Descriptors.Descriptor descriptor
+	) throws Exception {
 		DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
 		JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
 		return builder.build();
@@ -493,10 +488,5 @@ public class GrpcRequestUIController implements RequestEditorUI {
 	@Override
 	public String fxmlTemplatePath() {
 		return "/ui/grpc_request_editor.fxml";
-	}
-
-	@Override
-	public void saveChanges() {
-
 	}
 }

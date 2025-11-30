@@ -1,8 +1,6 @@
 package andrew_volostnykh.webrunner.service.http;
 
-import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.service.AbstractService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.http.HttpClient;

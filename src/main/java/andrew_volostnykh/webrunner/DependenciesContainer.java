@@ -3,7 +3,6 @@ package andrew_volostnykh.webrunner;
 import andrew_volostnykh.webrunner.service.grpc.GrpcReflectionService;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
-import andrew_volostnykh.webrunner.service.logs.request.DefaultRequestLogger;
 import andrew_volostnykh.webrunner.service.logs.request.LoggersContext;
 import andrew_volostnykh.webrunner.service.logs.request.RequestLogger;
 import andrew_volostnykh.webrunner.service.logs.request.RequestLoggerProvider;
@@ -23,7 +22,6 @@ public class DependenciesContainer {
 
 	private static final RequestLoggerProvider requestLoggerProvider = new RequestLoggerProvider();
 
-	private static final DefaultRequestLogger REQUESTS_LOGGER = new DefaultRequestLogger();
 	private static final NavigationTreePersistenceService
 		NAVIGATION_TREE_PERSISTANCE_SERVICE = new NavigationTreePersistenceService();
 	private static final GrpcReflectionService GRPC_REFLECTION_SERVICE = new GrpcReflectionService();

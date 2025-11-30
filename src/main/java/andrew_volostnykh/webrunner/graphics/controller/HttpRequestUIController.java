@@ -21,7 +21,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -35,11 +34,9 @@ import lombok.NoArgsConstructor;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor
 public class HttpRequestUIController implements RequestEditorUI {
@@ -118,13 +115,6 @@ public class HttpRequestUIController implements RequestEditorUI {
 		Button beautifyBtn = new Button("Beautify JSON");
 		beautifyBtn.setOnAction(e -> bodyArea.beautifyBody());
 		bodyContainer.getChildren().add(beautifyBtn);
-	}
-
-	@Override
-	public Node getRoot() {
-		return methodCombo.getScene() != null
-			? methodCombo.getScene().getRoot()
-			: null;
 	}
 
 	@Override
@@ -217,11 +207,6 @@ public class HttpRequestUIController implements RequestEditorUI {
 	}
 
 	@Override
-	public void saveChanges() {
-
-	}
-
-	@Override
 	public void sendRequest() {
 		if (requestRunner != null && !requestRunner.isDone()) {
 			statusLabel.setText("Another request running...");
@@ -231,7 +216,6 @@ public class HttpRequestUIController implements RequestEditorUI {
 		statusLabel.setText("Sending...");
 		responseArea.setText("");
 
-		AtomicReference<Map<String, Object>> vars = new AtomicReference<>();
 		RequestJsExecutor requestJsExecutor = JsExecutorService.requestExecutor();
 
 		requestRunner = CompletableFuture
@@ -252,8 +236,6 @@ public class HttpRequestUIController implements RequestEditorUI {
 						headersMap,
 						preparedBody
 					);
-
-					vars.set(requestJsExecutor.getVars());
 
 					preparedBody = varsApplicator.applyVariables(
 						bodyArea.getText(),

@@ -7,11 +7,12 @@ import lombok.Setter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Getter
 public class NavigationTreePersistenceService {
 
 	private static final Path STATE_FILE = Path.of("collections.json");
 
-	@Getter @Setter
+	@Setter
 	private CollectionNode rootNode;
 
 	public void save() {
@@ -20,7 +21,7 @@ public class NavigationTreePersistenceService {
 				DependenciesContainer.getObjectMapper().writeValue(STATE_FILE.toFile(), rootNode);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 		}
 	}
 
@@ -40,7 +41,7 @@ public class NavigationTreePersistenceService {
 				} catch (Exception ignored) {}
 			}
 		} catch (Exception e) {
-			System.err.println("Warning: collections storage file does not exist");
+			DependenciesContainer.logger().logMessage("Warning: collections storage file does not exist");
 		}
 		return null;
 	}
