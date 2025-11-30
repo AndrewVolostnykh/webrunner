@@ -5,7 +5,7 @@ import andrew_volostnykh.webrunner.graphics.RequestEditorUI;
 import andrew_volostnykh.webrunner.graphics.RequestUIFactory;
 import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreeService;
-import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -50,7 +50,7 @@ public class MainController {
 		}
 	}
 
-	private void loadRequest(RequestDefinition req) {
+	private void loadRequest(AbstractRequestDefinition req) {
 		mainEditorContainer.getChildren().clear();
 
 		activeEditor = RequestUIFactory.create(req);

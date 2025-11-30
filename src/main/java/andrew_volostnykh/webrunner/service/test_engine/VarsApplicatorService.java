@@ -5,7 +5,7 @@ import andrew_volostnykh.webrunner.service.AbstractService;
 
 import java.util.Map;
 
-public class VarsApplicator extends AbstractService {
+public class VarsApplicatorService extends AbstractService {
 
 	public String applyVariables(
 		String jsonBody,

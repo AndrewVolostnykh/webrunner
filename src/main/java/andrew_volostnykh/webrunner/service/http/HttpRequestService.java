@@ -47,18 +47,4 @@ public class HttpRequestService
 			);
 		}
 	}
-
-	// FIXME: move to separate Beautifier
-	public String formatJson(String json) {
-		try {
-			ObjectMapper objectMapper = DependenciesContainer.getObjectMapper();
-
-			Object obj = objectMapper.readValue(json, Object.class);
-
-			return objectMapper.writeValueAsString(obj);
-		} catch (Exception e) {
-			requestsLogger.logMessage("WARN: Cannot beautify json: " + e.getMessage());
-			return json;
-		}
-	}
 }

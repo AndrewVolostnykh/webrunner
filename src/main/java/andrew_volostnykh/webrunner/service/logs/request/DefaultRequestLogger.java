@@ -4,12 +4,14 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class DefaultRequestLogger implements RequestLogger {
+
 	private final StringBuilder logs = new StringBuilder();
 
 	public void logMessage(String message) {
-		System.err.println("Message appended " + message);
 		logs
-			.append(message);
+			.append("\n-------------------------------------")
+			.append(message)
+			.append("-------------------------------------");
 	}
 
 	public String getLogs() {

@@ -2,12 +2,12 @@ package andrew_volostnykh.webrunner.graphics;
 
 import andrew_volostnykh.webrunner.graphics.controller.GrpcRequestUIController;
 import andrew_volostnykh.webrunner.graphics.controller.HttpRequestUIController;
-import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
 
 public class RequestUIFactory {
 
 	public static RequestEditorUI create(
-		RequestDefinition requestDefinition
+		AbstractRequestDefinition requestDefinition
 	) {
 		return switch (requestDefinition.getType()) {
 			case HTTP_REQUEST -> new HttpRequestUIController();

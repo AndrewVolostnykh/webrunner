@@ -5,7 +5,6 @@ import java.util.Map;
 
 public record HttpResponseData(
 	int statusCode,
-	// FIXME: Should be Map<String, String>
 	Map<String, List<String>> headers,
 	String body
 ) {

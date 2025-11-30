@@ -10,8 +10,10 @@ import andrew_volostnykh.webrunner.service.grpc.GrpcMethodDefinition;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.js.RequestJsExecutor;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
-import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
-import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.GrpcRequestDefinition;
+import andrew_volostnykh.webrunner.service.test_engine.VarsApplicatorService;
+import andrew_volostnykh.webrunner.utils.Maps;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.util.JsonFormat;
@@ -109,7 +111,7 @@ public class GrpcRequestUIController implements RequestEditorUI {
 		DependenciesContainer.collectionPersistenceService();
 	private final JsExecutorService jsExecutorService =
 		DependenciesContainer.jsExecutorService();
-	private final VarsApplicator varsApplicator =
+	private final VarsApplicatorService varsApplicator =
 		DependenciesContainer.varsApplicator();
 
 	@FXML
@@ -276,7 +278,9 @@ public class GrpcRequestUIController implements RequestEditorUI {
 	}
 
 	@Override
-	public void loadRequest(RequestDefinition request) {
+	public void loadRequest(AbstractRequestDefinition abstractRequest) {
+		GrpcRequestDefinition request = (GrpcRequestDefinition) abstractRequest;
+
 		if (bodyListener != null) {
 			bodyArea.textProperty().removeListener(bodyListener);
 		}
@@ -293,7 +297,9 @@ public class GrpcRequestUIController implements RequestEditorUI {
 		}
 		headersListener = change -> {
 			request.getHeaders().clear();
-			headers.forEach(entry -> request.getHeaders().put(entry.getKey(), entry.getValue()));
+			headers.forEach(
+				entry -> Maps.singularPut(request.getHeaders(), entry.getKey(), entry.getValue())
+			);
 			persistenceService.save();
 		};
 		headers.addListener(headersListener);
@@ -312,9 +318,9 @@ public class GrpcRequestUIController implements RequestEditorUI {
 			beforeRequestCodeArea.textProperty()
 				.removeListener(beforeRequestAreaListener);
 		}
-		beforeRequestCodeArea.replaceText(request.getVarsDefinition());
+		beforeRequestCodeArea.replaceText(request.getBeforeRequest());
 		beforeRequestAreaListener = (obs, old, val) -> {
-			request.setVarsDefinition(val);
+			request.setBeforeRequest(val);
 			persistenceService.save();
 		};
 		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
@@ -324,9 +330,9 @@ public class GrpcRequestUIController implements RequestEditorUI {
 			afterResponseCodeArea.textProperty()
 				.removeListener(afterResponseAreaListener);
 		}
-		afterResponseCodeArea.replaceText(request.getOnResponse());
+		afterResponseCodeArea.replaceText(request.getAfterRequest());
 		afterResponseAreaListener = (obs, old, val) -> {
-			request.setOnResponse(val);
+			request.setAfterRequest(val);
 			persistenceService.save();
 		};
 		afterResponseCodeArea.textProperty().addListener(afterResponseAreaListener);

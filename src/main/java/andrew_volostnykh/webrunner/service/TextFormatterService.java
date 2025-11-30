@@ -1,6 +1,7 @@
 package andrew_volostnykh.webrunner.service;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,17 +13,6 @@ import java.util.stream.Collectors;
 public class TextFormatterService {
 
 	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^{}]+)}}");
-
-	public static String formatJson(String json) {
-		try {
-			Object obj = DependenciesContainer.getObjectMapper()
-				.readValue(json, Object.class);
-			return DependenciesContainer.getObjectMapper()
-				.writeValueAsString(obj);
-		} catch (Exception e) {
-			return json;
-		}
-	}
 
 	public static String shortName(String fullName) {
 		if (fullName == null) return null;
@@ -68,5 +58,22 @@ public class TextFormatterService {
 			.sorted(Map.Entry.comparingByKey())
 			.map(e -> "%s: %s".formatted(e.getKey(), String.join(" ", e.getValue())))
 			.collect(Collectors.joining(System.lineSeparator()));
+	}
+
+	public static String formatJson(String json) {
+		if (json == null || json.isEmpty()) {
+			return json;
+		}
+
+		try {
+			ObjectMapper objectMapper = DependenciesContainer.getObjectMapper();
+
+			Object obj = objectMapper.readValue(json, Object.class);
+
+			return objectMapper.writeValueAsString(obj);
+		} catch (Exception e) {
+			DependenciesContainer.logger().logMessage("WARN: Cannot beautify json: " + e.getMessage());
+			return json;
+		}
 	}
 }

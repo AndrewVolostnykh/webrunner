@@ -1,5 +1,6 @@
 package andrew_volostnykh.webrunner.service.persistence;
 
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ public class CollectionNode {
 	private boolean isFolder;
 	// isChain
 	private List<CollectionNode> children = new ArrayList<>();
-	private RequestDefinition request;
+	private AbstractRequestDefinition request;
 
 	public void addChild(CollectionNode node) {
 		if (children == null) {

@@ -61,7 +61,7 @@
 
 .keyword-special {
     -fx-fill: #FF8800;
-    -fx-font-weight: bold;
+    /*-fx-font-weight: bold;*/
 }
 
 .plain-text {

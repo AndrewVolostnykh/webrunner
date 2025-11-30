@@ -10,8 +10,10 @@ import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.js.RequestJsExecutor;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
-import andrew_volostnykh.webrunner.service.persistence.RequestDefinition;
-import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.HttpRequestDefinition;
+import andrew_volostnykh.webrunner.service.test_engine.VarsApplicatorService;
+import andrew_volostnykh.webrunner.utils.Maps;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -31,7 +33,9 @@ import javafx.scene.layout.VBox;
 import lombok.NoArgsConstructor;
 
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -86,16 +90,14 @@ public class HttpRequestUIController implements RequestEditorUI {
 		beforeRequestAreaListener,
 		afterResponseAreaListener;
 
-	private CompletableFuture<?> requestRunner; // TODO: move to request service
+	private CompletableFuture<?> requestRunner;
 
 	private final NavigationTreePersistenceService persistenceService =
 		DependenciesContainer.collectionPersistenceService();
 
-	private RequestDefinition request;
-
 	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();
 	private final JsExecutorService jsExecutorService = DependenciesContainer.jsExecutorService();
-	private final VarsApplicator varsApplicator = DependenciesContainer.varsApplicator();
+	private final VarsApplicatorService varsApplicator = DependenciesContainer.varsApplicator();
 
 	@FXML
 	public void initialize() {
@@ -126,8 +128,8 @@ public class HttpRequestUIController implements RequestEditorUI {
 	}
 
 	@Override
-	public void loadRequest(RequestDefinition req) {
-		this.request = req;
+	public void loadRequest(AbstractRequestDefinition abstractRequest) {
+		HttpRequestDefinition request = (HttpRequestDefinition) abstractRequest;
 
 		if (methodListener != null) {
 			methodCombo.valueProperty().removeListener(methodListener);
@@ -150,28 +152,36 @@ public class HttpRequestUIController implements RequestEditorUI {
 				.removeListener(afterResponseAreaListener);
 		}
 
-		methodCombo.setValue(req.getMethod());
-		urlField.setText(req.getUrl());
-		bodyArea.replaceText(req.getBody());
+		methodCombo.setValue(request.getMethod());
+		urlField.setText(request.getUrl());
+		bodyArea.replaceText(request.getBody());
 
 		headers.clear();
 		headersList.getChildren().clear();
-		req.getHeaders().forEach((k, v) -> {
-			var entry = new AbstractMap.SimpleEntry<>(k, v);
-			headers.add(entry);
-			addHeaderRowToUi(entry);
+		request.getHeaders().forEach((k, v) -> {
+			if (v.size() > 1) {
+				v.forEach(value -> {
+					var entry = new AbstractMap.SimpleEntry<>(k, value);
+					headers.add(entry);
+					addHeaderRowToUi(entry);
+				});
+			} else {
+				SimpleEntry<String, String> entry = new SimpleEntry<>(k, v.getFirst());
+				headers.add(entry);
+				addHeaderRowToUi(entry);
+			}
 		});
 
 		methodListener = (obs, old, val) -> {
-			req.setMethod(val);
+			request.setMethod(val);
 			persistenceService.save();
 		};
 		urlListener = (obs, old, val) -> {
-			req.setUrl(val);
+			request.setUrl(val);
 			persistenceService.save();
 		};
 		bodyListener = (obs, old, val) -> {
-			req.setBody(val);
+			request.setBody(val);
 			persistenceService.save();
 		};
 		methodCombo.valueProperty().addListener(methodListener);
@@ -179,22 +189,28 @@ public class HttpRequestUIController implements RequestEditorUI {
 		bodyArea.textProperty().addListener(bodyListener);
 
 		headersListener = change -> {
-			req.getHeaders().clear();
-			headers.forEach(entry -> req.getHeaders().put(entry.getKey(), entry.getValue()));
+			request.getHeaders().clear();
+			headers.forEach(
+				entry -> Maps.singularPut(
+					request.getHeaders(),
+					entry.getKey(),
+					entry.getValue()
+				)
+			);
 			persistenceService.save();
 		};
 		headers.addListener(headersListener);
 
-		beforeRequestCodeArea.replaceText(req.getVarsDefinition());
+		beforeRequestCodeArea.replaceText(request.getBeforeRequest());
 		beforeRequestAreaListener = (obs, old, val) -> {
-			req.setVarsDefinition(val);
+			request.setBeforeRequest(val);
 			persistenceService.save();
 		};
 		beforeRequestCodeArea.textProperty().addListener(beforeRequestAreaListener);
 
-		afterResponseCodeArea.replaceText(req.getOnResponse());
+		afterResponseCodeArea.replaceText(request.getAfterRequest());
 		afterResponseAreaListener = (obs, old, val) -> {
-			req.setOnResponse(val);
+			request.setAfterRequest(val);
 			persistenceService.save();
 		};
 		afterResponseCodeArea.textProperty().addListener(afterResponseAreaListener);
@@ -250,7 +266,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 						methodCombo.getValue(),
 						urlField.getText(),
 						preparedBody,
-						headersMap
+						headersMap // FIXME: invalid headers map. Applies last value only
 					);
 				} catch (Exception e) {
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
@@ -270,7 +286,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 					return;
 				}
 
-				String formattedBody = httpService.formatJson(result.body());
+				String formattedBody = TextFormatterService.formatJson(result.body());
 				statusLabel.setText("Response code: " + result.statusCode());
 				responseArea.setText(formattedBody);
 				responseHeaders.setText(TextFormatterService.beautyString(result.headers()));
@@ -324,7 +340,6 @@ public class HttpRequestUIController implements RequestEditorUI {
 		headerValueField.clear();
 		persistenceService.save();
 	}
-
 
 	public void clearLogs() {
 		logsArea.clear();

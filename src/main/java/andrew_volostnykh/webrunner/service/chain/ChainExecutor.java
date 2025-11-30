@@ -3,19 +3,13 @@ package andrew_volostnykh.webrunner.service.chain;
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
-import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import static andrew_volostnykh.webrunner.utils.Exceptions.muteException;
+import andrew_volostnykh.webrunner.service.test_engine.VarsApplicatorService;
 
 public class ChainExecutor {
 
 	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();
 	private final JsExecutorService jsExecutor = DependenciesContainer.jsExecutorService();
-	private final VarsApplicator varsApplicator = DependenciesContainer.varsApplicator();
+	private final VarsApplicatorService varsApplicator = DependenciesContainer.varsApplicator();
 
 //	public CompletableFuture<Void> executeChain(ChainDefinition chain) {
 //		return CompletableFuture.runAsync(() -> {

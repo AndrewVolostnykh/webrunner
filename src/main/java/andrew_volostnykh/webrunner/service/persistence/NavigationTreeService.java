@@ -2,6 +2,10 @@ package andrew_volostnykh.webrunner.service.persistence;
 
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.graphics.components.CreateTreeElementDialog;
+import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.GrpcRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.HttpRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.RequestType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
@@ -48,7 +52,7 @@ public class NavigationTreeService {
 
 	public static void addContextMenus(
 		TreeView<CollectionNode> collectionTree,
-		Consumer<RequestDefinition> loadRequest
+		Consumer<AbstractRequestDefinition> loadRequest
 	) {
 		collectionTree.setCellFactory(treeView -> new TreeCell<>() {
 			private final FontIcon folderIcon = new FontIcon("mdi-folder:16");
@@ -143,23 +147,21 @@ public class NavigationTreeService {
 		CollectionNode folderNode,
 		TreeItem<CollectionNode> folderItem,
 		TreeView<CollectionNode> collectionTree,
-		Consumer<RequestDefinition> loadRequest
+		Consumer<AbstractRequestDefinition> loadRequest
 	) {
 		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
 
 		dialog.show("New GRPC Request").ifPresent(name -> {
 			if (!name.isBlank()) {
-				// TODO: add hints
-				RequestDefinition request = new RequestDefinition(
-					UUID.randomUUID().toString(),
+				AbstractRequestDefinition request = new GrpcRequestDefinition(
 					name,
 					"GET",
+					"",
 					"",
 					new HashMap<>(),
 					"",
 					"",
-					"",
-					RequestType.GRPC_REQUEST
+					""
 				);
 
 				CollectionNode newNode = new CollectionNode(
@@ -184,23 +186,20 @@ public class NavigationTreeService {
 		CollectionNode folderNode,
 		TreeItem<CollectionNode> folderItem,
 		TreeView<CollectionNode> collectionTree,
-		Consumer<RequestDefinition> loadRequest
+		Consumer<AbstractRequestDefinition> loadRequest
 	) {
 		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
 
 		dialog.show("New HTTP Request").ifPresent(name -> {
 			if (!name.isBlank()) {
-				// TODO: add hints
-				RequestDefinition request = new RequestDefinition(
-					UUID.randomUUID().toString(),
+				AbstractRequestDefinition request = new HttpRequestDefinition(
 					name,
 					"GET",
 					"",
+					"",
 					new HashMap<>(),
 					"",
-					"",
-					"",
-					RequestType.HTTP_REQUEST
+					""
 				);
 
 				CollectionNode newNode = new CollectionNode(
@@ -225,7 +224,7 @@ public class NavigationTreeService {
 
 	public static void addListenerOnCreate(
 		TreeView<CollectionNode> collectionTree,
-		Consumer<RequestDefinition> loadRequest
+		Consumer<AbstractRequestDefinition> loadRequest
 	) {
 		collectionTree.getSelectionModel()
 			.selectedItemProperty()

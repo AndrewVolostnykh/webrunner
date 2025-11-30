@@ -8,7 +8,7 @@ import andrew_volostnykh.webrunner.service.logs.request.LoggersContext;
 import andrew_volostnykh.webrunner.service.logs.request.RequestLogger;
 import andrew_volostnykh.webrunner.service.logs.request.RequestLoggerProvider;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreePersistenceService;
-import andrew_volostnykh.webrunner.service.test_engine.VarsApplicator;
+import andrew_volostnykh.webrunner.service.test_engine.VarsApplicatorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.Getter;
@@ -44,10 +44,10 @@ public class DependenciesContainer {
 		return GRPC_REFLECTION_SERVICE;
 	}
 
-	public static VarsApplicator varsApplicator(
+	public static VarsApplicatorService varsApplicator(
 	) {
 		return
-			new VarsApplicator();
+			new VarsApplicatorService();
 	}
 
 	public static HttpRequestService httpRequestService() {
