@@ -1,46 +1,25 @@
-# WebRunner
+<p align="left">
+  <img src="./src/main/resources/icons/app-icon.png" alt="App Icon" width="48" style="vertical-align: middle;"/>
+  <span style="font-size: 32px; margin-left: 12px; vertical-align: middle;"><b>Webrunner</b></span>
+</p>
 
-WebRunner is a desktop tool for manual and semi-automated API testing.
-Its core feature is the ability to execute JavaScript before and after the HTTP request, 
-manage request collections, perform variable substitution, and work with a syntax-highlighted JSON editor.
+WebRunner is a lightweight desktop tool for manual and semi-automated API testing.  
+Its primary usage is building flows to execute API calls sequentially for testing purposes, with the ability to run JavaScript scripts before and after each request.
 
 ### Features
 
-- Requests and Collections tree
-- Before and After request JS executor
-- Vars Definition - use `{{variableName}}` in body and define `vars` variable in Before block, 
-and it will be replaced in request body
-- Log everything! - You getting and can write all the logs you need
-- Global Variables
-- A lot of context - Before request and After request contains all the needed context for you: 
-payloads, headers, vars and much more
+- **API Requests**
+- **Flow builder for API calling and testing**
+- **Logging of processes and requests**
+- Placeholders for automatic variable substitution
+- Functionality focused on simplifying test creation
 - Hotkeys
+- and much more!
 
-and much more!
+### Supported API protocols
 
-## Killer Feature
-
-Chaining. Chaining allows you to call request by request, having all the context about previous requests.
-
-You just create chain, select all needed request in needed order, and it will execute all of it
-
-Inside every Before and After block of all you will be able to access chain context 
-(all the meta information about chain, chain's before block and requests)'
-and Global Variables
-
---- 
-**For instance**: You need to create some entity, and then check it has been created, then compare all the needed fields.
-
-Just create Chain! Register request for creating entity, then register request to find created entity and in block 'After' of chain just compare all of it!
-
-> Remember! You have all the needed context
-
----
-
-### API protocols
-
-- http
-- grpc
+- HTTP
+- gRPC
 
 ### Tech stack
 
