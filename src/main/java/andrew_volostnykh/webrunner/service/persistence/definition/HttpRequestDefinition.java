@@ -2,6 +2,7 @@ package andrew_volostnykh.webrunner.service.persistence.definition;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,10 +10,25 @@ import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
 public class HttpRequestDefinition
 	extends AbstractRequestDefinition {
 
 	private String method;
+
+	public HttpRequestDefinition(
+		String name
+	) {
+		super(
+			name,
+			"",
+			"",
+			"",
+			new HashMap<>(),
+			""
+		);
+		this.method = "GET";
+	}
 
 	public HttpRequestDefinition(
 		String name,

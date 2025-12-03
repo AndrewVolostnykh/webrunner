@@ -3,7 +3,7 @@ package andrew_volostnykh.webrunner.service.persistence.definition;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,17 +17,19 @@ import java.util.UUID;
 @NoArgsConstructor
 
 @JsonTypeInfo(
-	use = Id.NAME,
+	use = JsonTypeInfo.Id.NAME,
+	include = As.EXISTING_PROPERTY,
 	property = "type"
 )
-@JsonSubTypes({@Type(
-	value = GrpcRequestDefinition.class,
-	name = "GRPC_REQUEST"
-), @Type(
-	value = HttpRequestDefinition.class,
-	name = "HTTP_REQUEST"
-)})
-
+@JsonSubTypes({
+	@Type(
+		value = GrpcRequestDefinition.class,
+		name = "GRPC_REQUEST"
+	),
+	@Type(
+		value = HttpRequestDefinition.class,
+		name = "HTTP_REQUEST"
+	)})
 public abstract class AbstractRequestDefinition {
 
 	protected String id;

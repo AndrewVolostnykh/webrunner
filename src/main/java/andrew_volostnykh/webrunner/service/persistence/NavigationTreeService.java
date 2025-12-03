@@ -13,8 +13,8 @@ import javafx.scene.control.TreeView;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class NavigationTreeService {
 
@@ -70,17 +70,21 @@ public class NavigationTreeService {
 					getItem(),
 					getTreeItem()
 				));
-				addHttpItem.setOnAction(e -> createHttpRequestInsideNode(
+				addHttpItem.setOnAction(e -> createRequestInsideNode(
+					"New HTTP request",
 					getItem(),
 					getTreeItem(),
 					collectionTree,
-					loadRequest
+					loadRequest,
+					HttpRequestDefinition::new
 				));
-				addGrpcItem.setOnAction(e -> createGrpcRequestInsideNode(
+				addGrpcItem.setOnAction(e -> createRequestInsideNode(
+					"New GRPC request",
 					getItem(),
 					getTreeItem(),
 					collectionTree,
-					loadRequest
+					loadRequest,
+					GrpcRequestDefinition::new
 				));
 				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
 				folderMenu.getItems().addAll(addFolderItem, addHttpItem, addGrpcItem, deleteFolderItem);
@@ -141,71 +145,28 @@ public class NavigationTreeService {
 		});
 	}
 
-	private static void createGrpcRequestInsideNode(
+	private static void createRequestInsideNode(
+		String basicRequestName,
 		CollectionNode folderNode,
 		TreeItem<CollectionNode> folderItem,
 		TreeView<CollectionNode> collectionTree,
-		Consumer<AbstractRequestDefinition> loadRequest
+		Consumer<AbstractRequestDefinition> loadRequest,
+		Function<String, AbstractRequestDefinition> constructor
 	) {
 		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
 
-		dialog.show("New GRPC Request").ifPresent(name -> {
+		dialog.show(basicRequestName).ifPresent(name -> {
 			if (!name.isBlank()) {
-				AbstractRequestDefinition request = new GrpcRequestDefinition(
-					name,
-					"GET",
-					"",
-					"",
-					new HashMap<>(),
-					"",
-					"",
-					""
-				);
+				AbstractRequestDefinition request =
+					constructor.apply(name);
 
-				CollectionNode newNode = new CollectionNode(
-					name,
-					false,
-					null,
-					request
-				);
-
-				folderNode.addChild(newNode);
-				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);
-				folderItem.getChildren().add(newItem);
-
-				NAVIGATION_TREE_PERSISTENCE_SERVICE.save();
-				collectionTree.getSelectionModel().select(newItem);
-				loadRequest.accept(request);
-			}
-		});
-	}
-
-	private static void createHttpRequestInsideNode(
-		CollectionNode folderNode,
-		TreeItem<CollectionNode> folderItem,
-		TreeView<CollectionNode> collectionTree,
-		Consumer<AbstractRequestDefinition> loadRequest
-	) {
-		CreateTreeElementDialog dialog = new CreateTreeElementDialog();
-
-		dialog.show("New HTTP Request").ifPresent(name -> {
-			if (!name.isBlank()) {
-				AbstractRequestDefinition request = new HttpRequestDefinition(
-					name,
-					"GET",
-					"",
-					"",
-					new HashMap<>(),
-					"",
-					""
-				);
-
-				CollectionNode newNode = new CollectionNode(
-					name,
-					false,
-					null,
-					request
-				);
+				CollectionNode newNode =
+					new CollectionNode(
+						name,
+						false,
+						null,
+						request
+					);
 
 				folderNode.addChild(newNode);
 				TreeItem<CollectionNode> newItem = new TreeItem<>(newNode);

@@ -14,11 +14,12 @@ import java.util.List;
 public class CollectionNode {
 	private String name;
 	private boolean isFolder;
-	// isChain
 	private List<CollectionNode> children = new ArrayList<>();
 	private AbstractRequestDefinition request;
 
-	public void addChild(CollectionNode node) {
+	public void addChild(
+		CollectionNode node
+	) {
 		if (children == null) {
 			children = new ArrayList<>();
 		}

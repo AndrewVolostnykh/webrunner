@@ -5,6 +5,8 @@ import andrew_volostnykh.webrunner.service.http.HttpRequestService;
 import andrew_volostnykh.webrunner.service.js.JsExecutorService;
 import andrew_volostnykh.webrunner.service.test_engine.VarsApplicatorService;
 
+// TODO: https://github.com/sirolf2009/fxgraph
+//  use this component
 public class ChainExecutor {
 
 	private final HttpRequestService httpService = DependenciesContainer.httpRequestService();

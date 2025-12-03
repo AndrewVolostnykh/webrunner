@@ -15,10 +15,9 @@ import lombok.Getter;
 public class DependenciesContainer {
 
 	@Getter
-	private static final ObjectMapper objectMapper = new ObjectMapper()
-		.enable(
-			SerializationFeature.INDENT_OUTPUT
-		);
+	public static final ObjectMapper objectMapper = new ObjectMapper()
+		.enable(SerializationFeature.INDENT_OUTPUT)
+		.findAndRegisterModules();
 
 	private static final RequestLoggerProvider requestLoggerProvider = new RequestLoggerProvider();
 

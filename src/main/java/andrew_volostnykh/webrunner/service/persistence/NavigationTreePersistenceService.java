@@ -28,19 +28,16 @@ public class NavigationTreePersistenceService {
 	public CollectionNode load() {
 		try {
 			if (Files.exists(STATE_FILE)) {
-				try {
-					if (Files.exists(STATE_FILE)) {
-						CollectionNode node = DependenciesContainer.getObjectMapper()
-							.readValue(
-								STATE_FILE.toFile(),
-								CollectionNode.class
-							);
-						normalizeTree(node);
-						return node;
-					}
-				} catch (Exception ignored) {}
+				CollectionNode node = DependenciesContainer.getObjectMapper()
+					.readValue(
+						STATE_FILE.toFile(),
+						CollectionNode.class
+					);
+				normalizeTree(node);
+				return node;
 			}
 		} catch (Exception e) {
+			System.err.println("collection.json deserialization error: " + e.getMessage());
 			DependenciesContainer.logger().logMessage("Warning: collections storage file does not exist");
 		}
 		return null;
