@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="andrew_volostnykh.webrunner.graphics.controller.ChainStepController"
+      spacing="10"
+      alignment="CENTER_LEFT"
+      style="-fx-background-color: #333333; -fx-padding: 10; -fx-background-radius: 6;">
+
+    <!-- Drag handle -->
+    <Label>
+        <graphic>
+            <FontIcon iconLiteral="mdi-drag:18" style="-fx-fill: #888;" />
+        </graphic>
+    </Label>
+
+    <!-- Step number -->
+    <Label fx:id="stepIndexLabel"
+           style="-fx-text-fill: #bbbbbb; -fx-font-size: 14px;"/>
+
+    <!-- Request name -->
+    <Label fx:id="requestNameLabel"
+           style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+
+    <Pane HBox.hgrow="ALWAYS"/>
+
+    <!-- Status -->
+    <Label fx:id="statusLabel"
+           style="-fx-text-fill: #888888; -fx-font-size: 12px;" />
+
+    <!-- Remove button -->
+    <Button onAction="#removeStep" styleClass="window-close-button">
+        <graphic>
+            <FontIcon iconLiteral="mdi-close:18" />
+        </graphic>
+    </Button>
+
+</HBox>
