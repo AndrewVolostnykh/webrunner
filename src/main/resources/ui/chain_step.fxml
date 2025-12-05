@@ -2,9 +2,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-
+<!--        fx:controller="andrew_volostnykh.webrunner.graphics.controller.chain.ChainStepController"-->
 <HBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="andrew_volostnykh.webrunner.graphics.controller.ChainStepController"
+
       spacing="10"
       alignment="CENTER_LEFT"
       style="-fx-background-color: #333333; -fx-padding: 10; -fx-background-radius: 6;">

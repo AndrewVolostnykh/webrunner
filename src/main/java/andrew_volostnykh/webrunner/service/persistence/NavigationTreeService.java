@@ -3,6 +3,7 @@ package andrew_volostnykh.webrunner.service.persistence;
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.graphics.components.CreateTreeElementDialog;
 import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
+import andrew_volostnykh.webrunner.service.persistence.definition.ChainRequestDefinition;
 import andrew_volostnykh.webrunner.service.persistence.definition.GrpcRequestDefinition;
 import andrew_volostnykh.webrunner.service.persistence.definition.HttpRequestDefinition;
 import javafx.scene.control.ContextMenu;
@@ -57,12 +58,14 @@ public class NavigationTreeService {
 			private final FontIcon requestIcon = new FontIcon("mdi-web:16");
 
 			private final ContextMenu folderMenu = new ContextMenu();
+			private final ContextMenu requestMenu = new ContextMenu();
+
 			private final MenuItem addFolderItem = new MenuItem("Add Folder");
 			private final MenuItem addHttpItem = new MenuItem("Add Http Request");
 			private final MenuItem addGrpcItem = new MenuItem("Add GRPC Request");
-			private final MenuItem deleteFolderItem = new MenuItem("Delete Folder");
+			private final MenuItem addChainItem = new MenuItem("Add Chain Request");
 
-			private final ContextMenu requestMenu = new ContextMenu();
+			private final MenuItem deleteFolderItem = new MenuItem("Delete Folder");
 			private final MenuItem deleteRequestItem = new MenuItem("Delete Request");
 
 			{
@@ -86,8 +89,17 @@ public class NavigationTreeService {
 					loadRequest,
 					GrpcRequestDefinition::new
 				));
+				addChainItem.setOnAction(e -> createRequestInsideNode(
+					"New Chain",
+					getItem(),
+					getTreeItem(),
+					collectionTree,
+					loadRequest,
+					ChainRequestDefinition::new
+				));
+
 				deleteFolderItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
-				folderMenu.getItems().addAll(addFolderItem, addHttpItem, addGrpcItem, deleteFolderItem);
+				folderMenu.getItems().addAll(addFolderItem, addHttpItem, addGrpcItem, addChainItem, deleteFolderItem);
 
 				deleteRequestItem.setOnAction(e -> deleteNode(getItem(), getTreeItem()));
 				requestMenu.getItems().add(deleteRequestItem);

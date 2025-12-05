@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<!--        fx:controller="andrew_volostnykh.webrunner.graphics.controller.chain.ChainBuilderUIController"-->
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="andrew_volostnykh.webrunner.graphics.controller.ChainBuilderController"
       spacing="10"
       padding="10"
       VBox.vgrow="ALWAYS">
@@ -14,13 +13,13 @@
                style="-fx-font-size: 18px; -fx-text-fill: white;" />
         <Pane HBox.hgrow="ALWAYS"/>
         <Button text="Run" fx:id="runChainButton" styleClass="request-button"/>
-        <Button text="Clear" fx:id="clearChainButton" styleClass="request-button"/>
+<!--        <Button text="Clear" fx:id="clearChainButton" styleClass="request-button"/>-->
     </HBox>
 
     <!-- Main container -->
     <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent;">
         <VBox fx:id="chainStepsContainer" spacing="8" padding="5" prefWidth="600">
-            <!-- Steps will be added dynamically -->
+
         </VBox>
     </ScrollPane>
 

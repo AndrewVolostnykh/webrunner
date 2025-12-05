@@ -29,7 +29,12 @@ import java.util.UUID;
 	@Type(
 		value = HttpRequestDefinition.class,
 		name = "HTTP_REQUEST"
-	)})
+	),
+	@Type(
+		value = ChainRequestDefinition.class,
+		name = "CHAIN_REQUEST"
+	)
+})
 public abstract class AbstractRequestDefinition {
 
 	protected String id;
