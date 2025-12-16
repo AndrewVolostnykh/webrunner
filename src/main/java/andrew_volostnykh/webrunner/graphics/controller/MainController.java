@@ -3,17 +3,20 @@ package andrew_volostnykh.webrunner.graphics.controller;
 import andrew_volostnykh.webrunner.DependenciesContainer;
 import andrew_volostnykh.webrunner.graphics.RequestEditorUI;
 import andrew_volostnykh.webrunner.graphics.RequestUIFactory;
+import andrew_volostnykh.webrunner.service.hotkeys.HotkeysListenersService;
 import andrew_volostnykh.webrunner.service.persistence.CollectionNode;
 import andrew_volostnykh.webrunner.service.persistence.NavigationTreeService;
 import andrew_volostnykh.webrunner.service.persistence.definition.AbstractRequestDefinition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class MainController {
 
@@ -40,6 +43,11 @@ public class MainController {
 		NavigationTreeService.addListenerOnCreate(
 			collectionTree,
 			this::loadRequest
+		);
+
+		HotkeysListenersService.registerSendRequestHotKeyListener(
+			mainEditorContainer,
+			this::sendRequest
 		);
 	}
 
@@ -88,6 +96,28 @@ public class MainController {
 
 	public void minimizeStage() {
 		getStage().setIconified(true);
+	}
+
+	@FXML
+	public void openHowToUse() {
+		try {
+			FXMLLoader loader = new FXMLLoader(
+				getClass().getResource("/ui/how-to-use.fxml")
+			);
+
+			Scene scene = new Scene(loader.load());
+			scene.getStylesheets().add(
+				getClass().getResource("/ui/styles/style.css").toExternalForm()
+			);
+			Stage stage = new Stage();
+			stage.initStyle(StageStyle.UNDECORATED);
+			stage.setTitle("How to use");
+			stage.setScene(scene);
+			stage.show();
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void maximizeRestoreStage() {

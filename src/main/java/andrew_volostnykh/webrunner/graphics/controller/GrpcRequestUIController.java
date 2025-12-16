@@ -441,26 +441,25 @@ public class GrpcRequestUIController implements RequestEditorUI {
 							0
 						);
 					} catch (Exception e) {
+						handleRequestFailure(e);
 						DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 					}
 
 					Platform.runLater(() -> {
 						responseArea.setText(jsonResponse);
-						statusLabel.setText("✔ gRPC OK");
+						statusLabel.setText("OK");
 					});
 
 					channel.shutdown();
 				} catch (Exception e) {
-					Platform.runLater(() -> {
-						responseArea.setText("ERROR: " + e.getMessage());
-						statusLabel.setText("❌ Failed");
-					});
+					handleRequestFailure(e);
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 				}
 			});
 
 		} catch (Exception ex) {
-			statusLabel.setText("❌ " + ex.getMessage());
+			handleRequestFailure(ex);
+			DependenciesContainer.logger().logMessage("ERROR: " + ex.getMessage());
 		}
 	}
 
@@ -488,5 +487,14 @@ public class GrpcRequestUIController implements RequestEditorUI {
 	@Override
 	public String fxmlTemplatePath() {
 		return "/ui/grpc_request_editor.fxml";
+	}
+
+	private void handleRequestFailure(
+		Throwable e
+	) {
+		Platform.runLater(() -> {
+			statusLabel.setText("Failed");
+			responseArea.setText(e.getMessage());
+		});
 	}
 }

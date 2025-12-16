@@ -21,6 +21,7 @@
 
         <Pane HBox.hgrow="ALWAYS"/>
 
+        <Button text="?" onAction="#openHowToUse" styleClass="window-button"/>
         <Button text="—" onAction="#minimizeStage" styleClass="window-button"/>
         <Button text="❐" onAction="#maximizeRestoreStage" styleClass="window-button"/>
         <Button text="✕" onAction="#closeStage" styleClass="window-close-button"/>

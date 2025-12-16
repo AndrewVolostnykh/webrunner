@@ -42,7 +42,6 @@ public class JsonCodeArea
 		});
 
 		this.setOnKeyTyped(this::handleAutoBrackets);
-//		this.addEventFilter(KeyEvent.KEY_PRESSED, this::handleAutoBrackets);
 	}
 
 	private void handleAutoBrackets(KeyEvent event) {

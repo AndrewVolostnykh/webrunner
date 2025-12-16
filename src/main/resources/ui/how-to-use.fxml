@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root"
+      styleClass="how-to-use-root"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="andrew_volostnykh.webrunner.graphics.controller.HowToUseUIController"
+      prefWidth="500" prefHeight="400">
+
+    <!-- Title bar -->
+    <HBox style="-fx-background-color: #2d2d2d;"
+          alignment="CENTER_LEFT"
+          spacing="10"
+          prefHeight="30"
+          onMousePressed="#onTitleBarMousePressed"
+          onMouseDragged="#onTitleBarMouseDragged">
+
+        <Label text="  WebRunner — How to use"
+               style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+
+        <Pane HBox.hgrow="ALWAYS"/>
+
+        <Button text="—" onAction="#minimizeStage" styleClass="window-button"/>
+        <Button text="✕" onAction="#closeStage" styleClass="window-close-button"/>
+    </HBox>
+
+    <!-- Content -->
+    <VBox spacing="10" style="-fx-padding: 10;" VBox.vgrow="ALWAYS">
+
+        <TitledPane text="Logs" expanded="false">
+            <VBox spacing="5" style="-fx-padding: 10;">
+                <Label text="Logs tab displays everything that happened in application"/>
+                <Label text="Displays custom logs. See: JS Predefined functions - log()"/>
+            </VBox>
+        </TitledPane>
+
+        <TitledPane text="Hotkeys" expanded="false">
+            <VBox spacing="5" style="-fx-padding: 10;">
+                <Label text="Ctrl + Enter — send request"/>
+                <Label text="Ctrl + Alt + L - beautify json/code in editors"/>
+                <Label text="Ctrl + Shift + D — duplicate"/>
+            </VBox>
+        </TitledPane>
+
+        <TitledPane text="Testing" expanded="false">
+            <VBox spacing="5" style="-fx-padding: 10;">
+                <Label text="Before request - modify body before it sent."/>
+                <Label text="JS editor has predefined functions"/>
+                <Label text="-- See: 'Before Request' block"/>
+                <Label text="After request - process, check, modify, save response globally"/>
+                <Label text="-- See: 'After Request' block"/>
+            </VBox>
+        </TitledPane>
+
+    </VBox>
+</VBox>

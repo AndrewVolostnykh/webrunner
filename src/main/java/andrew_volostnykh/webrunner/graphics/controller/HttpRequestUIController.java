@@ -107,7 +107,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 		afterResponseCodeArea = new JsCodeEditor();
 		afterResponseCodeArea.attachTo(afterResponseContainer);
 
-		methodCombo.setItems(FXCollections.observableArrayList("GET", "POST", "PUT", "DELETE"));
+		methodCombo.setItems(FXCollections.observableArrayList(HttpRequestService.HTTP_METHODS));
 		methodCombo.getSelectionModel().select("GET");
 		sendButton.setOnAction(e -> sendRequest());
 		cancelButton.setOnAction(e -> cancelRequest());
@@ -251,15 +251,13 @@ public class HttpRequestUIController implements RequestEditorUI {
 						headersMap // FIXME: invalid headers map. Applies last value only
 					);
 				} catch (Exception e) {
+					handleRequestFailure(e);
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 					return null;
 				}
 			})
 			.exceptionally(ex -> {
-				Platform.runLater(() -> {
-					statusLabel.setText("Error");
-					responseArea.setText(ex.getMessage());
-				});
+				handleRequestFailure(ex);
 				DependenciesContainer.logger().logMessage("ERROR: " + ex.getMessage());
 				return null;
 			})
@@ -281,6 +279,7 @@ public class HttpRequestUIController implements RequestEditorUI {
 						result.statusCode()
 					);
 				} catch (Exception e) {
+					handleRequestFailure(e);
 					DependenciesContainer.logger().logMessage("ERROR: " + e.getMessage());
 				}
 			}));
@@ -347,5 +346,14 @@ public class HttpRequestUIController implements RequestEditorUI {
 	@Override
 	public String fxmlTemplatePath() {
 		return "/ui/http_request_editor.fxml";
+	}
+
+	private void handleRequestFailure(
+		Throwable e
+	) {
+		Platform.runLater(() -> {
+			statusLabel.setText("Failed");
+			responseArea.setText(e.getMessage());
+		});
 	}
 }

@@ -59,3 +59,36 @@
 .request-button:pressed {
     -fx-background-color: #2a2a2a;
 }
+
+.how-to-use-root {
+    -fx-background-color: #3a3a3a;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #3a3a3a;
+    -fx-border-width: 0 0 1 0;
+}
+
+.titled-pane > .title > .text {
+    -fx-fill: white;
+    -fx-font-size: 13px;
+}
+
+.titled-pane > .content {
+    -fx-opacity: 1;
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #3a3a3a;
+}
+
+.titled-pane .content .label {
+    -fx-text-fill: white;
+}
+
+.titled-pane > .title > .arrow-button .arrow {
+    -fx-background-color: white;
+}
+
+.titled-pane > .title:hover {
+    -fx-background-color: #383838;
+}

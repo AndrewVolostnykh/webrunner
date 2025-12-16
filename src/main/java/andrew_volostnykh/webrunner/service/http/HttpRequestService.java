@@ -7,10 +7,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 
 public class HttpRequestService
 	extends AbstractService {
+
+	public static final List<String> HTTP_METHODS = List.of(
+		"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+	);
 
 	public HttpResponseData sendRequest(
 		String method,
@@ -21,7 +26,11 @@ public class HttpRequestService
 		try (HttpClient client = HttpClient.newHttpClient()) {
 
 			HttpRequest.Builder builder = HttpRequest.newBuilder()
-				.uri(URI.create(url));
+				.uri(
+					URI.create(
+						normalizeUrl(url)
+					)
+				);
 
 			headers.forEach(builder::header);
 
@@ -44,5 +53,12 @@ public class HttpRequestService
 				response.body()
 			);
 		}
+	}
+
+	private static String normalizeUrl(String url) {
+		if (!url.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+			return "http://" + url;
+		}
+		return url;
 	}
 }

@@ -9,9 +9,9 @@ public class DefaultRequestLogger implements RequestLogger {
 
 	public void logMessage(String message) {
 		logs
-			.append("\n-------------------------------------")
+			.append("-------------------------------------\n")
 			.append(message)
-			.append("-------------------------------------");
+			.append("\n-------------------------------------");
 	}
 
 	public String getLogs() {
